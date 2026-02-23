@@ -28,8 +28,12 @@ function Invoke-Git {
   if ($CaptureOutput) {
     $output = & git @Args 2>&1
     $exitCode = $LASTEXITCODE
-    if ($exitCode -ne 0 -and -not $AllowFailure) {
-      throw "Git command failed ($commandText): $($output -join "`n")"
+    if ($exitCode -ne 0) {
+      if (-not $AllowFailure) {
+        throw "Git command failed ($commandText): $($output -join "`n")"
+      }
+      # When AllowFailure is set and git fails, return empty string
+      return ""
     }
     return (($output -join "`n").Trim())
   }
@@ -98,8 +102,12 @@ try {
 
   $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm"
   $tagName = $timestamp
+  $releaseDir = Join-Path $repoRoot "release"
+  if (-not (Test-Path -LiteralPath $releaseDir)) {
+    New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
+  }
   $diffFileName = "rel-$timestamp.txt"
-  $diffFilePath = Join-Path $repoRoot $diffFileName
+  $diffFilePath = Join-Path $releaseDir $diffFileName
 
   $lastTag = Invoke-Git -Args @("describe", "--tags", "--abbrev=0") -CaptureOutput -AllowFailure
   $diffBody = ""
