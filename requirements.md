@@ -358,5 +358,6 @@ UX behavior:
 - `/js/state.js`
 - `/js/db.js`
 - `/js/router.js`
-- `/js/games/YahtzeeGame.js`
-- `/js/games/registry.js`
+- `/js/registry.js`
+- `/yahtzee/YahtzeeGame.js`
+- `/yahtzee/yahtzeePage.js`

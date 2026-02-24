@@ -1,7 +1,7 @@
 class State {
   constructor(globalSettings) {
     const defaults = {
-      theme: "light",
+      theme: "dark-mode",
       currentPage: "/",
     };
 
@@ -12,7 +12,7 @@ class State {
   }
 
   get theme() {
-    return this.globalSettings.theme || "light";
+    return this.globalSettings.theme || "dark-mode";
   }
 
   get currentPage() {
@@ -33,7 +33,7 @@ class State {
 }
 
 function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme || "light");
+  document.documentElement.setAttribute("data-theme", theme || "dark-mode");
 }
 
 window.ScorekeeperState = {
