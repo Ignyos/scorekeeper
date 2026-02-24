@@ -1,25 +1,22 @@
 ## Overview
-Scorekeeper MVP launches with full Yahtzee scoring, local data persistence, and responsive mobile-first UI. This release includes player management, game session tracking, and automated release workflow infrastructure.
+This release focuses on cleaner game organization, streamlined Yahtzee modal behavior, and a dark-mode-first default theme. It also adds release automation for tagged builds.
 
 ## New Features
-- **Yahtzee Scorekeeper**: Complete Yahtzee game with category-by-row layout, live totals, and accurate bonus scoring (upper bonus at 63+, Yahtzee bonuses)
-- **Player Management**: Create, rename, restore, and manage players with soft-delete protection for active sessions
-- **Game Sessions**: Start Yahtzee games, track scores in real-time, and view running totals and leaderboard
-- **History & Continue**: Resume active games and view past completed sessions with date-range formatting
-- **Theme Persistence**: Select and save visual theme preference across browser sessions
-- **Local Data Storage**: All data stored in IndexedDB with automatic save on every score update
+- **Default Dark Theme**: Starts new users in dark mode by default while preserving saved theme preferences.
+- **First Yahtzee Quick Apply**: Uses a simplified first-Yahtzee flow with a minimal Apply/Cancel interaction.
 
 ## Improvements
-- **Mobile-First UI**: Touch-friendly controls with 44px+ tap targets, responsive layout for all screen sizes
-- **Live Score Updates**: Immediate total recalculation and leaderboard refresh as scores change
-- **Special Scoring Rules**: Full Yahtzee rule implementation including forced/optional Joker placement and multiple Yahtzee bonuses
+- **Game Folder Organization**: Consolidates Yahtzee game files under the Yahtzee route folder and updates script loading paths.
+- **Route Script Loading**: Loads only required shared/game scripts per page for a cleaner structure.
+- **Yahtzee Renderer Separation**: Moves Yahtzee page rendering logic out of the app shell into a dedicated page module.
+
+## Bug Fixes
+- **Hidden UI Elements**: Ensures elements using the `hidden` attribute stay hidden consistently by enforcing `[hidden] { display: none !important; }`.
 
 ## Technical Changes
-- IndexedDB database with `players`, `sessions`, and `settings` stores
-- Game registry architecture supporting multiple game types
-- Plain JavaScript implementation with no module dependencies
-- Branch-gated release workflow (main branch only for production releases)
-- Automated diff generation and release notes clipboard integration
+- **Release Workflow**: Adds a GitHub Actions workflow to create releases automatically on tag pushes using `RELEASE_NOTES.md`.
+- **Registry Path Update**: Moves the game registry file from `js/games/registry.js` to `js/registry.js`.
+- **File Layout Update**: Moves Yahtzee game files from `js/games/*` to `yahtzee/*` and adds `yahtzee/yahtzeePage.js`.
 
 ## Installation
 1. Clone this repository
@@ -29,8 +26,7 @@ Scorekeeper MVP launches with full Yahtzee scoring, local data persistence, and 
 ## Requirements
 - Modern web browser with IndexedDB support (Chromium 25+, Firefox 16+, Safari 10+)
 - No backend server or additional dependencies required
-- Minimum 44x44 pixel touch targets recommended for mobile devices
 
 ## Documentation
-- See [requirements.md](requirements.md) for feature specifications and acceptance criteria
-- See [RELEASE_NOTES_STYLE.md](RELEASE_NOTES_STYLE.md) for release note guidelines
+- See [requirements.md](requirements.md) for feature specifications and acceptance criteria.
+- See [RELEASE_NOTES_STYLE.md](RELEASE_NOTES_STYLE.md) for release note formatting guidelines.
