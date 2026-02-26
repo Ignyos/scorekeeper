@@ -1,22 +1,24 @@
 ## Overview
-This release focuses on cleaner game organization, streamlined Yahtzee modal behavior, and a dark-mode-first default theme. It also adds release automation for tagged builds.
+This release adds full Scrabble support with round-based scoring, in-game score correction for completed rounds, and route/session updates so Scrabble works end-to-end across Home, game play, and History.
 
 ## New Features
-- **Default Dark Theme**: Starts new users in dark mode by default while preserving saved theme preferences.
-- **First Yahtzee Quick Apply**: Uses a simplified first-Yahtzee flow with a minimal Apply/Cancel interaction.
+- **Scrabble Game Mode**: Adds a dedicated Scrabble game page with New Game flow, player selection, and session persistence.
+- **Round-Based Scrabble Scoreboard**: Uses a round table with one active input row, auto-advances when all players submit valid round scores, and keeps running totals visible.
+- **Completed Round Score Editing**: Lets players correct previously entered Scrabble scores during active games using per-cell edit controls.
 
 ## Improvements
-- **Game Folder Organization**: Consolidates Yahtzee game files under the Yahtzee route folder and updates script loading paths.
-- **Route Script Loading**: Loads only required shared/game scripts per page for a cleaner structure.
-- **Yahtzee Renderer Separation**: Moves Yahtzee page rendering logic out of the app shell into a dedicated page module.
+- **Scrabble Score Entry UX**: Focuses the next active Scrabble input automatically and commits values on Enter for faster turn-by-turn entry.
+- **Scrabble Table Styling**: Improves readability with dedicated Scrabble table layout, active-row highlighting, and cleaner number inputs.
+- **Game Routing Coverage**: Adds Scrabble route handling for both standard and file-based paths.
 
 ## Bug Fixes
-- **Hidden UI Elements**: Ensures elements using the `hidden` attribute stay hidden consistently by enforcing `[hidden] { display: none !important; }`.
+- **History Continue Links**: Fixes Continue links to open the correct game route instead of always routing to Yahtzee.
+- **Scrabble History Outcomes**: Resolves "Outcome unavailable" for Scrabble sessions by computing results from round-based game state when needed.
 
 ## Technical Changes
-- **Release Workflow**: Adds a GitHub Actions workflow to create releases automatically on tag pushes using `RELEASE_NOTES.md`.
-- **Registry Path Update**: Moves the game registry file from `js/games/registry.js` to `js/registry.js`.
-- **File Layout Update**: Moves Yahtzee game files from `js/games/*` to `yahtzee/*` and adds `yahtzee/yahtzeePage.js`.
+- **Game Registry Expansion**: Registers Scrabble in the game registry for Home and History integration.
+- **Session Metadata Support**: Updates session creation to store game-specific metadata (`game`, `gameClass`, `gameVersion`) instead of hardcoded Yahtzee values.
+- **Scrabble Modules**: Adds `scrabble/ScrabbleGame.js`, `scrabble/scrabblePage.js`, and `scrabble/index.html`.
 
 ## Installation
 1. Clone this repository
