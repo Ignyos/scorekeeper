@@ -29,11 +29,16 @@
   function routePath(routeName) {
     const path = window.location.pathname.toLowerCase();
     const inSubFolder =
-      path.includes("/yahtzee/") || path.includes("/settings/") || path.includes("/players/") || path.includes("/history/");
+      path.includes("/yahtzee/") ||
+      path.includes("/scrabble/") ||
+      path.includes("/settings/") ||
+      path.includes("/players/") ||
+      path.includes("/history/");
 
     if (!isFileMode()) {
       if (routeName === "home") return "/";
       if (routeName === "yahtzee") return "/yahtzee";
+      if (routeName === "scrabble") return "/scrabble";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -46,6 +51,10 @@
     if (routeName === "yahtzee") {
       if (path.includes("/yahtzee/")) return "./index.html";
       return inSubFolder ? "../yahtzee/index.html" : "./yahtzee/index.html";
+    }
+    if (routeName === "scrabble") {
+      if (path.includes("/scrabble/")) return "./index.html";
+      return inSubFolder ? "../scrabble/index.html" : "./scrabble/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -475,9 +484,9 @@
           .map((name) => escapeHtml(name))
           .join(", ");
 
-        const leaderboard = session.gameState?.leaderboard || [];
-        const outcome = leaderboard.length
-          ? `<ol class="session-outcome">${leaderboard
+        const outcomeRows = buildOutcomeRows(session);
+        const outcome = outcomeRows.length
+          ? `<ol class="session-outcome">${outcomeRows
               .map((row) => {
                 const playerName = playerMap[row.playerId]?.name || row.playerId;
                 return `<li>${escapeHtml(playerName)} (${row.total})</li>`;
@@ -487,7 +496,7 @@
 
         const isActive = session.status === "active";
         const continueAction = isActive
-          ? `<a class="session-action" href="${withSessionId(routePath("yahtzee"), session.id)}">Continue</a>`
+          ? `<a class="session-action" href="${withSessionId(routePath(gameKey), session.id)}">Continue</a>`
           : "";
         const detailBody = isActive ? "" : outcome;
 
@@ -583,6 +592,65 @@
     return map;
   }
 
+  function buildOutcomeRows(session) {
+    const gameState = session?.gameState || {};
+    const leaderboard = Array.isArray(gameState.leaderboard) ? gameState.leaderboard : [];
+    if (leaderboard.length) {
+      return leaderboard;
+    }
+
+    const gameKey = String(session?.game || "").toLowerCase();
+    const playerIds = Array.isArray(session?.playerIds) ? session.playerIds : [];
+
+    if (gameKey === "scrabble") {
+      const totalsByPlayer = {};
+      for (const playerId of playerIds) {
+        totalsByPlayer[playerId] = 0;
+      }
+
+      const rounds = Array.isArray(gameState.rounds) ? gameState.rounds : [];
+      rounds.forEach((round) => {
+        const scoresByPlayer = round?.scoresByPlayer || {};
+        playerIds.forEach((playerId) => {
+          const value = scoresByPlayer[playerId];
+          if (Number.isInteger(value)) {
+            totalsByPlayer[playerId] += value;
+          }
+        });
+      });
+
+      const activeRound = gameState.activeRoundScoresByPlayer || {};
+      playerIds.forEach((playerId) => {
+        const value = activeRound[playerId];
+        if (Number.isInteger(value)) {
+          totalsByPlayer[playerId] += value;
+        }
+      });
+
+      return playerIds
+        .map((playerId) => ({
+          playerId,
+          total: totalsByPlayer[playerId] || 0,
+        }))
+        .sort((left, right) => right.total - left.total);
+    }
+
+    const totalsByPlayer = gameState.totalsByPlayer || {};
+    if (totalsByPlayer && typeof totalsByPlayer === "object") {
+      const rows = Object.keys(totalsByPlayer)
+        .map((playerId) => ({
+          playerId,
+          total: Number.isInteger(totalsByPlayer[playerId]) ? totalsByPlayer[playerId] : 0,
+        }))
+        .sort((left, right) => right.total - left.total);
+      if (rows.length) {
+        return rows;
+      }
+    }
+
+    return [];
+  }
+
   async function renderYahtzee(db) {
     const renderYahtzeePage = window.ScorekeeperGamesUI?.renderYahtzeePage;
     if (typeof renderYahtzeePage !== "function") {
@@ -590,6 +658,32 @@
     }
 
     await renderYahtzeePage(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+    });
+  }
+
+  async function renderScrabble(db) {
+    const renderScrabblePage = window.ScorekeeperGamesUI?.renderScrabblePage;
+    if (typeof renderScrabblePage !== "function") {
+      throw new Error("Scrabble page renderer is unavailable");
+    }
+
+    await renderScrabblePage(db, {
       parseSessionId,
       listPlayers,
       renderShell,
@@ -655,6 +749,10 @@
         }
         if (route.slug === "yahtzee") {
           await renderYahtzee(db);
+          return;
+        }
+        if (route.slug === "scrabble") {
+          await renderScrabble(db);
           return;
         }
       }

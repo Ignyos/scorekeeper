@@ -178,9 +178,9 @@ async function restorePlayer(db, playerId) {
 async function createSession(db, input) {
   const now = new Date().toISOString();
   const session = {
-    game: "yahtzee",
-    gameVersion: "1",
-    gameClass: "YahtzeeGame",
+    game: input.game || "yahtzee",
+    gameVersion: input.gameVersion || "1",
+    gameClass: input.gameClass || "YahtzeeGame",
     playerIds: input.playerIds,
     status: "active",
     startTime: now,

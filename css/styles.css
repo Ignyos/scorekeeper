@@ -491,3 +491,99 @@ td {
 .end-game-result-name {
   flex: 1;
 }
+
+.scrabble-actions-row {
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.scrabble-sheet {
+  min-width: 560px;
+}
+
+.scrabble-sheet th,
+.scrabble-sheet td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.scrabble-sheet th[scope="row"] {
+  text-align: left;
+}
+
+.scrabble-active-row th,
+.scrabble-active-row td {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.scrabble-completed-row {
+  opacity: 0.92;
+}
+
+.scrabble-round-number {
+  font-weight: 700;
+}
+
+.scrabble-round-input {
+  width: 100%;
+  min-width: 72px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  font: inherit;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.scrabble-round-input::-webkit-outer-spin-button,
+.scrabble-round-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.scrabble-round-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.scrabble-completed-cell-wrap {
+  position: relative;
+}
+
+.scrabble-cell-edit-button {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-height: 24px;
+  height: 24px;
+  width: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scrabble-completed-cell-wrap:hover .scrabble-cell-edit-button,
+.scrabble-completed-cell-wrap:focus-within .scrabble-cell-edit-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scrabble-completed-edit-input {
+  width: 100%;
+  min-width: 72px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.scrabble-completed-edit-input::-webkit-outer-spin-button,
+.scrabble-completed-edit-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

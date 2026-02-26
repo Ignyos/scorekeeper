@@ -22,6 +22,15 @@ function getRouteFromPath(pathname) {
     return { key: "game", slug: "yahtzee" };
   }
 
+  if (cleanPath.endsWith("/scrabble") || cleanPath.endsWith("/scrabble/index.html")) {
+    return { key: "game", slug: "scrabble" };
+  }
+
+  const fileModeGameMatch = cleanPath.match(/^\/(?!settings|players|history)([^/]+)\/index\.html$/);
+  if (fileModeGameMatch) {
+    return { key: "game", slug: fileModeGameMatch[1].toLowerCase() };
+  }
+
   if (cleanPath.endsWith("/index.html")) {
     return { key: "home", slug: "" };
   }

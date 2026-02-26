@@ -1,0 +1,571 @@
+(function () {
+  "use strict";
+
+  function buildPlayerMap(players) {
+    const map = {};
+    for (const player of players) {
+      map[player.id] = player;
+    }
+    return map;
+  }
+
+  async function renderScrabblePage(db, deps) {
+    const {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+    } = deps;
+
+    const sessionId = parseSessionId();
+    if (!sessionId) {
+      const players = await listPlayers(db, { includeDeleted: false });
+      renderShell(
+        "Scrabble",
+        `
+          <section class="card">
+            <p>Start a new Scrabble session.</p>
+            <button type="button" id="open-start-game">New Game</button>
+          </section>
+          ${startGameModalHtml("Scrabble", players)}
+        `,
+      );
+
+      const modal = document.getElementById("start-game-modal");
+      const openButton = document.getElementById("open-start-game");
+      const cancelButton = document.getElementById("start-game-cancel");
+      const submitButton = document.getElementById("start-game-submit");
+      const addPlayerButton = document.getElementById("start-game-add-player");
+      const addPlayerInput = document.getElementById("start-game-new-player");
+      const playerSelect = document.getElementById("start-game-player-select");
+      const selectedList = document.getElementById("start-game-selected-list");
+
+      const playerById = {};
+      for (const player of players) {
+        playerById[player.id] = player;
+      }
+
+      let selectedPlayerIds = [];
+
+      function openModal() {
+        modal.hidden = false;
+      }
+
+      function closeModal() {
+        modal.hidden = true;
+      }
+
+      function renderSelectedPlayers() {
+        selectedList.innerHTML = selectedPlayerIds
+          .map((playerId) => {
+            const playerName = playerById[playerId]?.name || playerId;
+            return `
+              <li class="selected-player-item">
+                <span>${escapeHtml(playerName)}</span>
+                <button type="button" data-remove-selected-player="${playerId}" aria-label="Remove ${escapeHtml(playerName)}">×</button>
+              </li>
+            `;
+          })
+          .join("");
+
+        selectedList.querySelectorAll("[data-remove-selected-player]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const playerId = button.getAttribute("data-remove-selected-player");
+            selectedPlayerIds = selectedPlayerIds.filter((id) => id !== playerId);
+            renderSelectedPlayers();
+          });
+        });
+      }
+
+      openButton?.addEventListener("click", openModal);
+      cancelButton?.addEventListener("click", closeModal);
+
+      playerSelect?.addEventListener("change", () => {
+        const playerId = playerSelect.value;
+        if (!playerId) {
+          return;
+        }
+        if (!selectedPlayerIds.includes(playerId)) {
+          selectedPlayerIds.push(playerId);
+          renderSelectedPlayers();
+        }
+        playerSelect.value = "";
+      });
+
+      if (shouldAutoOpenNewGame()) {
+        openModal();
+        clearNewGameQueryParam();
+      }
+
+      addPlayerButton?.addEventListener("click", async () => {
+        const newName = addPlayerInput.value;
+        if (!newName.trim()) {
+          return;
+        }
+        try {
+          const player = await createPlayer(db, newName);
+          playerById[player.id] = player;
+
+          const option = document.createElement("option");
+          option.value = player.id;
+          option.textContent = player.name;
+          playerSelect.appendChild(option);
+
+          if (!selectedPlayerIds.includes(player.id)) {
+            selectedPlayerIds.push(player.id);
+            renderSelectedPlayers();
+          }
+
+          addPlayerInput.value = "";
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+
+      submitButton?.addEventListener("click", async () => {
+        try {
+          const selected = [...selectedPlayerIds];
+          if (selected.length < 2) {
+            alert("Select at least 2 players");
+            return;
+          }
+
+          const GameClass = await loadGameClassBySlug("scrabble");
+          const game = new GameClass(null);
+          game.ensurePlayers(selected);
+
+          const session = await createSession(db, {
+            game: "scrabble",
+            gameClass: "ScrabbleGame",
+            gameVersion: "1",
+            playerIds: selected,
+            gameState: game.getState(),
+          });
+
+          window.location.href = withSessionId(routePath("scrabble"), session.id);
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+      return;
+    }
+
+    const session = await getSession(db, sessionId);
+    if (!session) {
+      renderShell(
+        "Scrabble",
+        `
+          <section class="card">
+            <p>Session not found.</p>
+            <a href="${routePath("home")}">Go to Home</a>
+          </section>
+        `,
+      );
+      return;
+    }
+
+    const players = await listPlayers(db, { includeDeleted: true });
+    const playerMap = buildPlayerMap(players);
+
+    const GameClass = await loadGameClassBySlug("scrabble");
+    const game = new GameClass(session.gameState);
+    game.ensurePlayers(session.playerIds);
+
+    const completedGameWindowText =
+      session.status === "completed" ? formatCompletedGameWindow(session.startTime, session.endTime) : "";
+
+    renderShell(
+      "Scrabble",
+      `
+        ${
+          completedGameWindowText
+            ? `<section class="card"><p class="muted">${escapeHtml(completedGameWindowText)}</p></section>`
+            : ""
+        }
+
+        <section class="card">
+          <div class="yahtzee-sheet-wrap">
+            <table class="scrabble-sheet">
+            <thead>
+              <tr>
+                <th scope="col">Round</th>
+                ${session.playerIds
+                  .map((playerId) => {
+                    const playerName = playerMap[playerId]?.name || playerId;
+                    return `<th scope="col">${escapeHtml(playerName)}</th>`;
+                  })
+                  .join("")}
+              </tr>
+            </thead>
+            <tbody id="scrabble-scoreboard-body"></tbody>
+          </table>
+          </div>
+          <div class="row scrabble-actions-row">
+            <button type="button" id="scrabble-end-game" ${session.status !== "active" ? "disabled" : ""}>End Game</button>
+          </div>
+        </section>
+
+        <div class="modal-backdrop" id="scrabble-end-confirm-modal" hidden>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scrabble-end-confirm-title">
+            <h2 id="scrabble-end-confirm-title">End Scrabble Game</h2>
+            <p id="scrabble-end-confirm-text">Are you sure you want to end the game?</p>
+            <div class="row start-game-actions">
+              <button type="button" id="scrabble-end-confirm-submit">End Game</button>
+              <button type="button" id="scrabble-end-confirm-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-backdrop" id="scrabble-end-results-modal" hidden>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scrabble-end-results-title">
+            <h2 id="scrabble-end-results-title">Final Results</h2>
+            <ul id="scrabble-end-results-list" class="end-game-results"></ul>
+            <div class="row start-game-actions">
+              <button type="button" id="scrabble-end-results-close">Close</button>
+            </div>
+          </div>
+        </div>
+      `,
+    );
+
+    const scoreboardBody = document.getElementById("scrabble-scoreboard-body");
+    const endGameButton = document.getElementById("scrabble-end-game");
+
+    const endConfirmModal = document.getElementById("scrabble-end-confirm-modal");
+    const endConfirmSubmit = document.getElementById("scrabble-end-confirm-submit");
+    const endConfirmCancel = document.getElementById("scrabble-end-confirm-cancel");
+
+    const endResultsModal = document.getElementById("scrabble-end-results-modal");
+    const endResultsList = document.getElementById("scrabble-end-results-list");
+    const endResultsClose = document.getElementById("scrabble-end-results-close");
+    let editingCell = null;
+
+    function parseInputInteger(value) {
+      if (!value || !String(value).trim()) {
+        return null;
+      }
+      const parsed = Number.parseInt(String(value), 10);
+      return Number.isInteger(parsed) ? parsed : null;
+    }
+
+    function startCompletedCellEdit(roundIndex, playerId) {
+      const rounds = game.getCompletedRounds();
+      const round = rounds[roundIndex];
+      if (!round) {
+        return;
+      }
+      const currentValue = round.scoresByPlayer[playerId];
+      editingCell = {
+        roundIndex,
+        playerId,
+        draftValue: Number.isInteger(currentValue) ? String(currentValue) : "",
+      };
+      renderScoreboardRows();
+    }
+
+    function cancelCompletedCellEdit() {
+      editingCell = null;
+      renderScoreboardRows();
+    }
+
+    async function commitCompletedCellEdit(roundIndex, playerId, rawValue) {
+      const parsed = parseInputInteger(rawValue);
+      if (!Number.isInteger(parsed)) {
+        alert("Enter a valid integer score.");
+        return false;
+      }
+
+      game.updateCompletedRoundScore({
+        roundIndex,
+        playerId,
+        value: parsed,
+      });
+      editingCell = null;
+      await updateSessionGameState(db, session.id, game.getState(), null);
+      renderScoreboardRows();
+      return true;
+    }
+
+    function renderScoreboardRows() {
+      if (!scoreboardBody) {
+        return;
+      }
+
+      const completedRounds = game.getCompletedRounds();
+      const completedRowsHtml = completedRounds
+        .map((round, index) => {
+          const roundCells = session.playerIds
+            .map((playerId) => {
+              const value = round.scoresByPlayer[playerId];
+              const isEditing =
+                session.status === "active" &&
+                editingCell &&
+                editingCell.roundIndex === index &&
+                editingCell.playerId === playerId;
+
+              if (isEditing) {
+                const playerName = playerMap[playerId]?.name || playerId;
+                return `
+                  <td class="scrabble-editing-cell">
+                    <input
+                      class="scrabble-completed-edit-input"
+                      type="number"
+                      step="1"
+                      value="${escapeHtml(editingCell.draftValue)}"
+                      data-edit-round-index="${index}"
+                      data-edit-player-id="${playerId}"
+                      aria-label="Edit round ${index + 1} score for ${escapeHtml(playerName)}"
+                    />
+                  </td>
+                `;
+              }
+
+              const displayValue = Number.isInteger(value) ? String(value) : "";
+              if (session.status !== "active") {
+                return `<td>${displayValue}</td>`;
+              }
+
+              return `
+                <td class="scrabble-completed-cell-wrap">
+                  <span>${displayValue}</span>
+                  <button
+                    type="button"
+                    class="scrabble-cell-edit-button"
+                    data-round-index="${index}"
+                    data-player-id="${playerId}"
+                    aria-label="Edit round ${index + 1} score"
+                  >✎</button>
+                </td>
+              `;
+            })
+            .join("");
+
+          return `
+            <tr class="scrabble-completed-row">
+              <th scope="row">${index + 1}</th>
+              ${roundCells}
+            </tr>
+          `;
+        })
+        .join("");
+
+      const activeRoundNumber = completedRounds.length + 1;
+      const activeRoundCells = session.playerIds
+        .map((playerId) => {
+          const playerName = playerMap[playerId]?.name || playerId;
+          const current = game.getActiveRoundScore(playerId);
+          if (session.status !== "active") {
+            return `<td>${current === null ? "" : String(current)}</td>`;
+          }
+          return `
+            <td>
+              <input
+                class="scrabble-round-input"
+                type="number"
+                step="1"
+                value="${current === null ? "" : String(current)}"
+                data-player-id="${playerId}"
+                aria-label="Round ${activeRoundNumber} score for ${escapeHtml(playerName)}"
+              />
+            </td>
+          `;
+        })
+        .join("");
+
+      const totals = game.getTotalsByPlayer(session.playerIds, { includeActiveRound: true });
+      const totalCells = session.playerIds
+        .map((playerId) => `<td><strong>${totals[playerId]}</strong></td>`)
+        .join("");
+
+      const activeRoundRow = `
+        <tr class="scrabble-active-row">
+          <th scope="row">
+            <span class="scrabble-round-number">${activeRoundNumber}</span>
+          </th>
+          ${activeRoundCells}
+        </tr>
+      `;
+
+      const totalRow = `
+        <tr class="yahtzee-summary-row">
+          <th scope="row">Total</th>
+          ${totalCells}
+        </tr>
+      `;
+
+      scoreboardBody.innerHTML = `${completedRowsHtml}${activeRoundRow}${totalRow}`;
+
+      if (session.status === "active") {
+        scoreboardBody.querySelectorAll(".scrabble-cell-edit-button").forEach((button) => {
+          button.addEventListener("click", () => {
+            const roundIndex = Number.parseInt(button.getAttribute("data-round-index"), 10);
+            const playerId = button.getAttribute("data-player-id");
+            if (!Number.isInteger(roundIndex) || !playerId) {
+              return;
+            }
+            startCompletedCellEdit(roundIndex, playerId);
+          });
+        });
+
+        scoreboardBody.querySelectorAll(".scrabble-completed-edit-input").forEach((input) => {
+          input.addEventListener("input", () => {
+            const roundIndex = Number.parseInt(input.getAttribute("data-edit-round-index"), 10);
+            const playerId = input.getAttribute("data-edit-player-id");
+            if (!Number.isInteger(roundIndex) || !playerId) {
+              return;
+            }
+            if (editingCell && editingCell.roundIndex === roundIndex && editingCell.playerId === playerId) {
+              editingCell.draftValue = input.value;
+            }
+          });
+
+          input.addEventListener("keydown", async (event) => {
+            const roundIndex = Number.parseInt(input.getAttribute("data-edit-round-index"), 10);
+            const playerId = input.getAttribute("data-edit-player-id");
+            if (!Number.isInteger(roundIndex) || !playerId) {
+              return;
+            }
+
+            if (event.key === "Escape") {
+              event.preventDefault();
+              cancelCompletedCellEdit();
+              return;
+            }
+
+            if (event.key !== "Enter") {
+              return;
+            }
+
+            event.preventDefault();
+            await commitCompletedCellEdit(roundIndex, playerId, input.value);
+          });
+
+          input.addEventListener("blur", async () => {
+            const roundIndex = Number.parseInt(input.getAttribute("data-edit-round-index"), 10);
+            const playerId = input.getAttribute("data-edit-player-id");
+            if (!Number.isInteger(roundIndex) || !playerId) {
+              return;
+            }
+
+            const stillEditingThisCell =
+              editingCell && editingCell.roundIndex === roundIndex && editingCell.playerId === playerId;
+            if (!stillEditingThisCell) {
+              return;
+            }
+
+            await commitCompletedCellEdit(roundIndex, playerId, input.value);
+          });
+        });
+
+        scoreboardBody.querySelectorAll(".scrabble-round-input").forEach((input) => {
+          input.addEventListener("keydown", async (event) => {
+            if (event.key !== "Enter") {
+              return;
+            }
+            event.preventDefault();
+
+            const playerId = input.getAttribute("data-player-id");
+            const parsed = parseInputInteger(input.value);
+            try {
+              game.applyActiveRoundScoreUpdate({
+                playerId,
+                value: parsed,
+              });
+
+              if (game.canAdvanceRound(session.playerIds)) {
+                game.advanceRound(session.playerIds);
+              }
+
+              renderScoreboardRows();
+              await updateSessionGameState(db, session.id, game.getState(), null);
+            } catch (error) {
+              alert(error.message);
+              input.value = game.getActiveRoundScore(playerId) ?? "";
+            }
+          });
+        });
+
+        const currentTurnPlayerId = session.playerIds.find((playerId) => game.getActiveRoundScore(playerId) === null) || null;
+        const editInput = scoreboardBody.querySelector(".scrabble-completed-edit-input");
+        const currentTurnInput = editingCell
+          ? editInput
+          : currentTurnPlayerId
+            ? scoreboardBody.querySelector(`.scrabble-round-input[data-player-id="${currentTurnPlayerId}"]`)
+            : null;
+        if (currentTurnInput instanceof HTMLInputElement) {
+          try {
+            currentTurnInput.focus({ preventScroll: true });
+          } catch {
+            currentTurnInput.focus();
+          }
+        }
+      }
+    }
+
+    renderScoreboardRows();
+
+    function openEndConfirmModal() {
+      if (endConfirmModal) {
+        endConfirmModal.hidden = false;
+      }
+    }
+
+    function closeEndConfirmModal() {
+      if (endConfirmModal) {
+        endConfirmModal.hidden = true;
+      }
+    }
+
+    function showEndResults() {
+      const finalTotals = game.getTotalsByPlayer(session.playerIds, { includeActiveRound: true });
+      const sortedPlayerIds = [...session.playerIds].sort((leftPlayerId, rightPlayerId) => {
+        return finalTotals[rightPlayerId] - finalTotals[leftPlayerId];
+      });
+      endResultsList.innerHTML = sortedPlayerIds
+        .map((playerId) => {
+          const playerName = playerMap[playerId]?.name || playerId;
+          return `
+            <li class="end-game-result-item">
+              <span class="end-game-result-score">${finalTotals[playerId]}</span>
+              <span class="end-game-result-name">${escapeHtml(playerName)}</span>
+            </li>
+          `;
+        })
+        .join("");
+      if (endResultsModal) {
+        endResultsModal.hidden = false;
+      }
+    }
+
+    endGameButton?.addEventListener("click", openEndConfirmModal);
+    endConfirmCancel?.addEventListener("click", closeEndConfirmModal);
+    endConfirmSubmit?.addEventListener("click", async () => {
+      try {
+        await completeSession(db, session.id, game.getState());
+        closeEndConfirmModal();
+        showEndResults();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    endResultsClose?.addEventListener("click", () => {
+      window.location.href = routePath("home");
+    });
+  }
+
+  window.ScorekeeperGamesUI = window.ScorekeeperGamesUI || {};
+  window.ScorekeeperGamesUI.renderScrabblePage = renderScrabblePage;
+})();

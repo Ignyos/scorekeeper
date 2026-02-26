@@ -6,6 +6,13 @@ const gameRegistry = {
     className: "YahtzeeGame",
     load: async () => window.ScorekeeperGames?.YahtzeeGame || null,
   },
+  scrabble: {
+    slug: "scrabble",
+    title: "Scrabble",
+    description: "Track running totals for a Scrabble game.",
+    className: "ScrabbleGame",
+    load: async () => window.ScorekeeperGames?.ScrabbleGame || null,
+  },
 };
 
 async function loadGameClassBySlug(slug) {
