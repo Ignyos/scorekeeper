@@ -67,6 +67,7 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     } = deps;
 
     const sessionId = parseSessionId();
@@ -250,6 +251,7 @@
 
     const completedGameWindowText =
       session.status === "completed" ? formatCompletedGameWindow(session.startTime, session.endTime) : "";
+    const rulesAction = rulesTriggerHtml("yahtzee", { context: "game", sessionId: session.id });
 
     const upperCategories = GameClass.upperCategories();
     const lowerCategories = GameClass.lowerCategories();
@@ -393,15 +395,12 @@
           </div>
         </section>
 
-        ${
-          showEndGameSection
-            ? `
-              <section class="card">
-                <button id="complete-session">End Game</button>
-              </section>
-            `
-            : ""
-        }
+        <section class="card">
+          <div class="row game-actions-row">
+            ${rulesAction}
+            ${showEndGameSection ? `<button id="complete-session">End Game</button>` : ""}
+          </div>
+        </section>
 
         <div class="modal-backdrop" id="end-game-confirm-modal" hidden>
           <div class="modal" role="dialog" aria-modal="true" aria-labelledby="end-game-confirm-title">

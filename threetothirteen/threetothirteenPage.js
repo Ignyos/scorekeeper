@@ -27,12 +27,13 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     } = deps;
 
     const sessionId = parseSessionId();
     if (!sessionId) {
       const players = await listPlayers(db, { includeDeleted: false });
-      renderShell("", startGameModalHtml("Three to Thirteen", players));
+      renderShell("", startGameModalHtml("Three Thirteen", players));
 
       const modal = document.getElementById("start-game-modal");
       const cancelButton = document.getElementById("start-game-cancel");
@@ -191,7 +192,7 @@
     const session = await getSession(db, sessionId);
     if (!session) {
       renderShell(
-        "Three to Thirteen",
+        "Three Thirteen",
         `
           <section class="card">
             <p>Session not found.</p>
@@ -211,9 +212,10 @@
 
     const completedGameWindowText =
       session.status === "completed" ? formatCompletedGameWindow(session.startTime, session.endTime) : "";
+    const rulesAction = rulesTriggerHtml("threetothirteen", { context: "game", sessionId: session.id });
 
     renderShell(
-      "Three to Thirteen",
+      "Three Thirteen",
       `
         ${
           completedGameWindowText
@@ -239,14 +241,15 @@
               <tbody id="ttt-scoreboard-body"></tbody>
             </table>
           </div>
-          <div class="row scrabble-actions-row">
+          <div class="row game-actions-row">
+            ${rulesAction}
             <button type="button" id="ttt-end-game" ${session.status !== "active" ? "disabled" : ""}>End Game</button>
           </div>
         </section>
 
         <div class="modal-backdrop" id="ttt-end-confirm-modal" hidden>
           <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ttt-end-confirm-title">
-            <h2 id="ttt-end-confirm-title">End Three to Thirteen Game</h2>
+            <h2 id="ttt-end-confirm-title">End Three Thirteen Game</h2>
             <p id="ttt-end-confirm-text"></p>
             <div class="row start-game-actions ttt-end-confirm-actions">
               <button type="button" id="ttt-end-confirm-home">Home</button>
@@ -338,10 +341,10 @@
                 return `
                   <td>
                     <div class="ttt-player-cell">
-                      <div>${Number.isInteger(score) ? String(score) : ""}</div>
+                      <div class="ttt-score-readonly">${Number.isInteger(score) ? String(score) : ""}</div>
                       <label class="ttt-winner-toggle">
-                        <input type="radio" disabled ${checked ? "checked" : ""} />
                         <span>Win</span>
+                        <input type="radio" disabled ${checked ? "checked" : ""} />
                       </label>
                     </div>
                   </td>
@@ -361,6 +364,7 @@
                       aria-label="Round ${round.cardValue} score for ${escapeHtml(playerName)}"
                     />
                     <label class="ttt-winner-toggle">
+                      <span>Win</span>
                       <input
                         class="ttt-winner-radio"
                         type="radio"
@@ -370,7 +374,6 @@
                         ${checked ? "checked" : ""}
                         aria-label="Mark ${escapeHtml(playerName)} as winner for round ${round.cardValue}"
                       />
-                      <span>Win</span>
                     </label>
                   </div>
                 </td>

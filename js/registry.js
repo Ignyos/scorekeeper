@@ -15,7 +15,7 @@ const gameRegistry = {
   },
   threetothirteen: {
     slug: "threetothirteen",
-    title: "Three to Thirteen",
+    title: "Three Thirteen",
     description: "Track 11 rounds and keep the lowest total score to win.",
     className: "ThreeToThirteenGame",
     load: async () => window.ScorekeeperGames?.ThreeToThirteenGame || null,

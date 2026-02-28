@@ -218,6 +218,115 @@
     }
   }
 
+  const RULES_BY_GAME = {
+    yahtzee: {
+      title: "Yahtzee Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Score the highest total by filling all score categories.</p>
+        <h3>Turn Flow</h3>
+        <ul>
+          <li>On your turn, roll five dice up to three times.</li>
+          <li>After each roll, you may keep any dice and re-roll the rest.</li>
+          <li>After your final roll, choose one open category and record a score.</li>
+        </ul>
+        <h3>Scoring Basics</h3>
+        <ul>
+          <li>Upper section (Ones through Sixes) scores the sum of matching dice.</li>
+          <li>If your upper subtotal is 63 or more, you earn a 35-point bonus.</li>
+          <li>Lower section categories score combinations like Three/Four of a Kind, Full House, Straights, Chance, and Yahtzee.</li>
+        </ul>
+        <h3>Yahtzee and Bonus Yahtzees</h3>
+        <ul>
+          <li>A Yahtzee is five of a kind and scores 50 in the Yahtzee category.</li>
+          <li>Additional Yahtzees may award bonus points when allowed by your current score sheet state.</li>
+          <li>If no legal scoring option is available for a roll, you must record 0 in an open category.</li>
+        </ul>
+        <h3>Game End</h3>
+        <p>The game ends when all categories are filled for all players. Highest grand total wins.</p>
+      `,
+    },
+    scrabble: {
+      title: "Scrabble Scoring Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Finish with the highest total score.</p>
+        <h3>Round Scoring</h3>
+        <ul>
+          <li>After each round, each player enters their round score in the active row.</li>
+          <li>When all player scores are entered, the round is committed and a new row opens automatically.</li>
+          <li>Totals update as scores are entered and include the current in-progress row.</li>
+        </ul>
+        <h3>Score Corrections</h3>
+        <ul>
+          <li>Completed round cells are editable.</li>
+          <li>Tap or click a completed cell to update the recorded score.</li>
+          <li>Use integer values only for all score entries.</li>
+        </ul>
+        <h3>Game End</h3>
+        <p>Click End Game when play is complete. The highest total score wins.</p>
+      `,
+    },
+    threetothirteen: {
+      title: "Three Thirteen Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Create valid sets and runs while keeping the lowest total penalty score after 11 rounds.</p>
+        <h3>Players and Decks</h3>
+        <ul>
+          <li>Best with 2 to 4 players.</li>
+          <li>Use one standard 52-card deck for 2 players.</li>
+          <li>Use two standard decks for 3 to 4 players.</li>
+          <li>Aces are low; card order is A, 2, 3, ... Q, K.</li>
+        </ul>
+        <h3>Round Structure</h3>
+        <ul>
+          <li>The game has 11 rounds, with hands increasing from 3 cards up to 13 cards.</li>
+          <li>Deal passes left each round.</li>
+          <li>After dealing, remaining cards form the stock and one card starts the discard pile.</li>
+        </ul>
+        <h3>Turn Flow</h3>
+        <ul>
+          <li>Draw one card (from stock or top of discard pile).</li>
+          <li>Arrange your hand into melds if possible.</li>
+          <li>Discard one card to end your turn.</li>
+        </ul>
+        <h3>Melds</h3>
+        <ul>
+          <li><strong>Set</strong>: 3 or more cards of the same rank.</li>
+          <li><strong>Run</strong>: 3 or more consecutive cards of the same suit.</li>
+          <li>Each card can count in only one meld.</li>
+          <li>Since Ace is low, A-2-3 is valid and Q-K-A is not.</li>
+        </ul>
+        <h3>Wild Cards by Round</h3>
+        <ul>
+          <li>Each round’s rank is wild: round 1 uses 3s, round 2 uses 4s, and so on through Kings in round 11.</li>
+          <li>Wild cards may substitute for other cards in runs or sets.</li>
+          <li>A valid meld must include at least one non-wild card.</li>
+        </ul>
+        <h3>Going Out and End of Round</h3>
+        <ul>
+          <li>You can go out when, after drawing, all cards can be organized into melds with one final discard.</li>
+          <li>After a player goes out, other players get one last turn.</li>
+        </ul>
+        <h3>Scoring</h3>
+        <ul>
+          <li>After each round, only cards not used in melds count as penalty points.</li>
+          <li>Ace = 1 point; number cards = face value; Jack/Queen/King = 10 points each.</li>
+          <li>Add round penalties across all 11 rounds; lowest total wins.</li>
+        </ul>
+        <h3>Using This Scorekeeper</h3>
+        <ul>
+          <li>Enter each player’s round score as an integer.</li>
+          <li>Use the Win toggle to mark the round winner.</li>
+          <li>Totals update automatically, and lower totals are better.</li>
+        </ul>
+        <h3>Game End</h3>
+        <p>Play through all 11 rounds. The player with the lowest cumulative score wins.</p>
+      `,
+    },
+  };
+
   function menuHtml() {
     return `
       <details class="menu" id="main-menu">
@@ -269,6 +378,73 @@
     `;
   }
 
+  function rulesTriggerHtml(gameSlug, options) {
+    const context = options?.context === "game" ? "game" : "home";
+    const variant = options?.variant === "badge" ? "badge" : "inline";
+    const sessionId = options?.sessionId ? String(options.sessionId) : "";
+    const className = variant === "badge" ? "rules-trigger rules-trigger-badge" : "rules-trigger";
+
+    return `
+      <button
+        type="button"
+        class="${className}"
+        data-open-rules="1"
+        data-rules-game="${escapeHtml(gameSlug)}"
+        data-rules-context="${escapeHtml(context)}"
+        data-rules-session-id="${escapeHtml(sessionId)}"
+      >Rules</button>
+    `;
+  }
+
+  function rulesModalHtml() {
+    return `
+      <div class="modal-backdrop" id="rules-modal" hidden>
+        <div class="modal rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+          <h2 id="rules-modal-title">Rules</h2>
+          <div id="rules-modal-content" class="rules-modal-content"></div>
+          <div class="row start-game-actions">
+            <button type="button" id="close-rules-modal">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function parseRulesParams() {
+    const params = new URLSearchParams(window.location.search);
+    const game = (params.get("rules") || "").toLowerCase();
+    const context = (params.get("rulesContext") || "").toLowerCase();
+    const sessionId = params.get("rulesSession") || "";
+    if (!game) {
+      return null;
+    }
+    return {
+      game,
+      context: context === "game" ? "game" : "home",
+      sessionId,
+    };
+  }
+
+  function setRulesParams(gameSlug, context, sessionId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("rules", gameSlug);
+    url.searchParams.set("rulesContext", context);
+    if (context === "game" && sessionId) {
+      url.searchParams.set("rulesSession", sessionId);
+    } else {
+      url.searchParams.delete("rulesSession");
+    }
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function clearRulesParams() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("rules");
+    url.searchParams.delete("rulesContext");
+    url.searchParams.delete("rulesSession");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
   function startGameModalHtml(gameTitle, players) {
     const playerOptions = players
       .map((player) => `<option value="${player.id}">${escapeHtml(player.name)}</option>`)
@@ -306,8 +482,9 @@
     `;
   }
 
-  function renderShell(title, innerHtml) {
+  function renderShell(title, innerHtml, titleActionHtml) {
     const heading = String(title || "").trim();
+    const action = String(titleActionHtml || "").trim();
     app.innerHTML = `
       <header class="topbar">
         <div class="topbar-inner">
@@ -315,10 +492,20 @@
         </div>
       </header>
       <div class="container">
-        ${heading ? `<h1>${heading}</h1>` : ""}
+        ${
+          heading
+            ? `
+              <div class="page-title-row">
+                <h1>${heading}</h1>
+                ${action}
+              </div>
+            `
+            : ""
+        }
         ${innerHtml}
       </div>
       ${aboutModalHtml()}
+      ${rulesModalHtml()}
     `;
 
     const menuRoot = document.getElementById("main-menu");
@@ -344,6 +531,14 @@
     const aboutModal = document.getElementById("about-modal");
     const openAboutButton = document.getElementById("open-about-modal");
     const closeAboutButton = document.getElementById("close-about-modal");
+    const rulesModal = document.getElementById("rules-modal");
+    const rulesModalTitle = document.getElementById("rules-modal-title");
+    const rulesModalContent = document.getElementById("rules-modal-content");
+    const closeRulesButton = document.getElementById("close-rules-modal");
+
+    let currentRulesContext = "home";
+    let currentRulesGameSlug = "";
+    let currentRulesSessionId = "";
 
     function closeAboutModal() {
       if (aboutModal) {
@@ -367,6 +562,70 @@
         closeAboutModal();
       }
     });
+
+    function openRulesModal(gameSlug, context, sessionId) {
+      const rules = RULES_BY_GAME[gameSlug];
+      if (!rules || !rulesModal || !rulesModalTitle || !rulesModalContent) {
+        return;
+      }
+
+      currentRulesContext = context === "game" ? "game" : "home";
+      currentRulesGameSlug = gameSlug;
+      currentRulesSessionId = sessionId || "";
+      rulesModalTitle.textContent = rules.title;
+      rulesModalContent.innerHTML = rules.html;
+      rulesModal.hidden = false;
+      setRulesParams(currentRulesGameSlug, currentRulesContext, currentRulesSessionId);
+    }
+
+    function closeRulesModal() {
+      if (!rulesModal) {
+        return;
+      }
+
+      const gameRoute = currentRulesGameSlug ? routePath(currentRulesGameSlug) : routePath("home");
+      const target =
+        currentRulesContext === "game"
+          ? withSessionId(gameRoute, currentRulesSessionId || parseSessionId() || "")
+          : routePath("home");
+
+      const targetUrl = new URL(target, window.location.href);
+      const currentUrl = new URL(window.location.href);
+      const sameTarget = targetUrl.pathname === currentUrl.pathname;
+
+      if (sameTarget) {
+        clearRulesParams();
+        rulesModal.hidden = true;
+        return;
+      }
+
+      window.location.href = target;
+    }
+
+    app.querySelectorAll("[data-open-rules='1']").forEach((trigger) => {
+      trigger.addEventListener("click", () => {
+        const gameSlug = (trigger.getAttribute("data-rules-game") || "").toLowerCase();
+        const context = (trigger.getAttribute("data-rules-context") || "home").toLowerCase();
+        const sessionId = trigger.getAttribute("data-rules-session-id") || parseSessionId() || "";
+        if (!gameSlug) {
+          return;
+        }
+        openRulesModal(gameSlug, context, sessionId);
+      });
+    });
+
+    closeRulesButton?.addEventListener("click", closeRulesModal);
+
+    rulesModal?.addEventListener("click", (event) => {
+      if (event.target === rulesModal) {
+        closeRulesModal();
+      }
+    });
+
+    const initialRules = parseRulesParams();
+    if (initialRules && RULES_BY_GAME[initialRules.game]) {
+      openRulesModal(initialRules.game, initialRules.context, initialRules.sessionId);
+    }
   }
 
   async function persistState(db, state) {
@@ -390,6 +649,7 @@
         const description = gameDef.description || "Start a new game";
         return `
           <article class="home-game-card">
+            ${rulesTriggerHtml(gameDef.slug, { context: "home", variant: "badge" })}
             <h2>${escapeHtml(title)}</h2>
             <p class="muted">${escapeHtml(description)}</p>
             <div class="row home-game-actions">
@@ -772,6 +1032,7 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     });
   }
 
@@ -798,13 +1059,14 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     });
   }
 
   async function renderThreeToThirteen(db) {
     const renderThreeToThirteenPage = window.ScorekeeperGamesUI?.renderThreeToThirteenPage;
     if (typeof renderThreeToThirteenPage !== "function") {
-      throw new Error("Three to Thirteen page renderer is unavailable");
+      throw new Error("Three Thirteen page renderer is unavailable");
     }
 
     await renderThreeToThirteenPage(db, {
@@ -824,6 +1086,7 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     });
   }
 

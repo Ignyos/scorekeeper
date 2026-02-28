@@ -27,6 +27,7 @@
       escapeHtml,
       updateSessionGameState,
       completeSession,
+      rulesTriggerHtml,
     } = deps;
 
     const sessionId = parseSessionId();
@@ -213,6 +214,7 @@
 
     const completedGameWindowText =
       session.status === "completed" ? formatCompletedGameWindow(session.startTime, session.endTime) : "";
+    const rulesAction = rulesTriggerHtml("scrabble", { context: "game", sessionId: session.id });
 
     renderShell(
       "Scrabble",
@@ -240,7 +242,8 @@
             <tbody id="scrabble-scoreboard-body"></tbody>
           </table>
           </div>
-          <div class="row scrabble-actions-row">
+          <div class="row game-actions-row">
+            ${rulesAction}
             <button type="button" id="scrabble-end-game" ${session.status !== "active" ? "disabled" : ""}>End Game</button>
           </div>
         </section>

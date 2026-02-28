@@ -38,6 +38,17 @@ body {
   padding: 16px;
 }
 
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-title-row h1 {
+  margin: 0;
+}
+
 .topbar {
   position: fixed;
   top: 0;
@@ -144,6 +155,36 @@ body {
   height: 36px;
   display: inline-block;
   margin: 0;
+}
+
+.rules-trigger {
+  min-height: 36px;
+  padding: 6px 12px;
+}
+
+.rules-modal {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.rules-modal-content {
+  overflow: auto;
+  min-height: 0;
+}
+
+.rules-modal-content h3 {
+  margin: 10px 0 6px 0;
+}
+
+.rules-modal-content p {
+  margin: 0 0 8px 0;
+}
+
+.rules-modal-content ul {
+  margin: 0 0 10px 0;
+  padding-left: 20px;
 }
 
 .card {
@@ -320,10 +361,21 @@ td {
 }
 
 .home-game-card {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
   background: var(--surface);
+}
+
+.rules-trigger-badge {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
 }
 
 .home-game-card h2 {
@@ -550,8 +602,8 @@ td {
   flex: 1;
 }
 
-.scrabble-actions-row {
-  justify-content: flex-end;
+.game-actions-row {
+  justify-content: space-between;
   margin-top: 10px;
 }
 
@@ -697,9 +749,15 @@ td {
 
 .ttt-player-cell {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ttt-score-readonly {
+  min-width: 72px;
+  text-align: center;
 }
 
 .ttt-score-input {
@@ -726,9 +784,10 @@ td {
 }
 
 .ttt-winner-toggle {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-size: 12px;
   color: var(--muted);
 }
