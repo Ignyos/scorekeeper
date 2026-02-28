@@ -133,6 +133,19 @@ body {
   color: var(--accent);
 }
 
+.about-link-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.about-logo {
+  width: 36px;
+  height: 36px;
+  display: inline-block;
+  margin: 0;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -542,6 +555,48 @@ td {
   margin-top: 10px;
 }
 
+.scrabble-end-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-content: initial;
+}
+
+.yahtzee-end-confirm-actions,
+.ttt-end-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-content: initial;
+}
+
+.scrabble-end-confirm-actions > :nth-child(1) {
+  justify-self: start;
+}
+
+.yahtzee-end-confirm-actions > :nth-child(1),
+.ttt-end-confirm-actions > :nth-child(1) {
+  justify-self: start;
+}
+
+.scrabble-end-confirm-actions > :nth-child(2) {
+  justify-self: center;
+}
+
+.yahtzee-end-confirm-actions > :nth-child(2),
+.ttt-end-confirm-actions > :nth-child(2) {
+  justify-self: center;
+}
+
+.scrabble-end-confirm-actions > :nth-child(3) {
+  justify-self: end;
+}
+
+.yahtzee-end-confirm-actions > :nth-child(3),
+.ttt-end-confirm-actions > :nth-child(3) {
+  justify-self: end;
+}
+
 .scrabble-sheet {
   min-width: 560px;
 }
@@ -563,6 +618,11 @@ td {
 
 .scrabble-completed-row {
   opacity: 0.92;
+}
+
+.scrabble-next-round-row th,
+.scrabble-next-round-row td {
+  opacity: 0.65;
 }
 
 .scrabble-round-number {
@@ -594,29 +654,12 @@ td {
 
 .scrabble-completed-cell-wrap {
   position: relative;
+  cursor: pointer;
 }
 
-.scrabble-cell-edit-button {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  min-height: 24px;
-  height: 24px;
-  width: 24px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.scrabble-completed-cell-wrap:hover .scrabble-cell-edit-button,
-.scrabble-completed-cell-wrap:focus-within .scrabble-cell-edit-button {
-  opacity: 1;
-  pointer-events: auto;
+.scrabble-completed-cell-wrap:hover,
+.scrabble-completed-cell-wrap:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 }
 
 .scrabble-completed-edit-input {

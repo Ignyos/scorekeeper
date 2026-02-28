@@ -407,7 +407,8 @@
           <div class="modal" role="dialog" aria-modal="true" aria-labelledby="end-game-confirm-title">
             <h2 id="end-game-confirm-title">End Game</h2>
             <p id="end-game-confirm-text" class="muted"></p>
-            <div class="row start-game-actions">
+            <div class="row start-game-actions yahtzee-end-confirm-actions">
+              <button type="button" id="end-game-confirm-home">Home</button>
               <button type="button" id="end-game-confirm-submit">End Game</button>
               <button type="button" id="end-game-confirm-cancel">Cancel</button>
             </div>
@@ -771,6 +772,7 @@
     const completeButton = document.getElementById("complete-session");
     const endGameConfirmModal = document.getElementById("end-game-confirm-modal");
     const endGameConfirmText = document.getElementById("end-game-confirm-text");
+    const endGameConfirmHome = document.getElementById("end-game-confirm-home");
     const endGameConfirmSubmit = document.getElementById("end-game-confirm-submit");
     const endGameConfirmCancel = document.getElementById("end-game-confirm-cancel");
     const endGameModal = document.getElementById("end-game-modal");
@@ -846,6 +848,10 @@
     });
 
     endGameConfirmCancel?.addEventListener("click", closeEndGameConfirmModal);
+
+    endGameConfirmHome?.addEventListener("click", () => {
+      window.location.href = routePath("home");
+    });
 
     endGameConfirmSubmit?.addEventListener("click", async () => {
       try {

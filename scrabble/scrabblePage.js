@@ -249,7 +249,9 @@
           <div class="modal" role="dialog" aria-modal="true" aria-labelledby="scrabble-end-confirm-title">
             <h2 id="scrabble-end-confirm-title">End Scrabble Game</h2>
             <p id="scrabble-end-confirm-text">Are you sure you want to end the game?</p>
-            <div class="row start-game-actions">
+            <p class="muted">You can also go Home now and continue this game later from History / Continue.</p>
+            <div class="row start-game-actions scrabble-end-confirm-actions">
+              <button type="button" id="scrabble-end-confirm-home">Home</button>
               <button type="button" id="scrabble-end-confirm-submit">End Game</button>
               <button type="button" id="scrabble-end-confirm-cancel">Cancel</button>
             </div>
@@ -272,6 +274,7 @@
     const endGameButton = document.getElementById("scrabble-end-game");
 
     const endConfirmModal = document.getElementById("scrabble-end-confirm-modal");
+    const endConfirmHome = document.getElementById("scrabble-end-confirm-home");
     const endConfirmSubmit = document.getElementById("scrabble-end-confirm-submit");
     const endConfirmCancel = document.getElementById("scrabble-end-confirm-cancel");
 
@@ -279,6 +282,7 @@
     const endResultsList = document.getElementById("scrabble-end-results-list");
     const endResultsClose = document.getElementById("scrabble-end-results-close");
     let editingCell = null;
+    let pendingCompletedCellEdit = null;
 
     function parseInputInteger(value) {
       if (!value || !String(value).trim()) {
@@ -326,6 +330,26 @@
       return true;
     }
 
+    async function commitActiveRoundScore(playerId, rawValue, expectedRoundNumber) {
+      const currentActiveRoundNumber = game.getCompletedRounds().length + 1;
+      if (!Number.isInteger(expectedRoundNumber) || expectedRoundNumber !== currentActiveRoundNumber) {
+        return;
+      }
+
+      const parsed = parseInputInteger(rawValue);
+      game.applyActiveRoundScoreUpdate({
+        playerId,
+        value: parsed,
+      });
+
+      if (game.canAdvanceRound(session.playerIds)) {
+        game.advanceRound(session.playerIds);
+      }
+
+      renderScoreboardRows();
+      await updateSessionGameState(db, session.id, game.getState(), null);
+    }
+
     function renderScoreboardRows() {
       if (!scoreboardBody) {
         return;
@@ -365,16 +389,17 @@
                 return `<td>${displayValue}</td>`;
               }
 
+              const playerName = playerMap[playerId]?.name || playerId;
               return `
-                <td class="scrabble-completed-cell-wrap">
+                <td
+                  class="scrabble-completed-cell-wrap"
+                  data-round-index="${index}"
+                  data-player-id="${playerId}"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Edit round ${index + 1} score for ${escapeHtml(playerName)}"
+                >
                   <span>${displayValue}</span>
-                  <button
-                    type="button"
-                    class="scrabble-cell-edit-button"
-                    data-round-index="${index}"
-                    data-player-id="${playerId}"
-                    aria-label="Edit round ${index + 1} score"
-                  >✎</button>
                 </td>
               `;
             })
@@ -405,6 +430,7 @@
                 step="1"
                 value="${current === null ? "" : String(current)}"
                 data-player-id="${playerId}"
+                data-active-round-number="${activeRoundNumber}"
                 aria-label="Round ${activeRoundNumber} score for ${escapeHtml(playerName)}"
               />
             </td>
@@ -426,6 +452,18 @@
         </tr>
       `;
 
+      const trailingBlankRoundNumber = activeRoundNumber + 1;
+      const trailingBlankCells = session.playerIds.map(() => "<td></td>").join("");
+      const trailingBlankRow =
+        session.status === "active"
+          ? `
+            <tr class="scrabble-next-round-row">
+              <th scope="row" class="muted">${trailingBlankRoundNumber}</th>
+              ${trailingBlankCells}
+            </tr>
+          `
+          : "";
+
       const totalRow = `
         <tr class="yahtzee-summary-row">
           <th scope="row">Total</th>
@@ -433,17 +471,40 @@
         </tr>
       `;
 
-      scoreboardBody.innerHTML = `${completedRowsHtml}${activeRoundRow}${totalRow}`;
+      scoreboardBody.innerHTML = `${completedRowsHtml}${activeRoundRow}${trailingBlankRow}${totalRow}`;
 
       if (session.status === "active") {
-        scoreboardBody.querySelectorAll(".scrabble-cell-edit-button").forEach((button) => {
-          button.addEventListener("click", () => {
-            const roundIndex = Number.parseInt(button.getAttribute("data-round-index"), 10);
-            const playerId = button.getAttribute("data-player-id");
+        scoreboardBody.querySelectorAll(".scrabble-completed-cell-wrap").forEach((cell) => {
+          const getCellEditTarget = () => {
+            const roundIndex = Number.parseInt(cell.getAttribute("data-round-index"), 10);
+            const playerId = cell.getAttribute("data-player-id");
             if (!Number.isInteger(roundIndex) || !playerId) {
+              return null;
+            }
+            return { roundIndex, playerId };
+          };
+
+          const openCellEditor = () => {
+            const target = getCellEditTarget();
+            if (!target) {
               return;
             }
+            pendingCompletedCellEdit = null;
+            const { roundIndex, playerId } = target;
             startCompletedCellEdit(roundIndex, playerId);
+          };
+
+          cell.addEventListener("pointerdown", () => {
+            pendingCompletedCellEdit = getCellEditTarget();
+          });
+
+          cell.addEventListener("click", openCellEditor);
+          cell.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+              return;
+            }
+            event.preventDefault();
+            openCellEditor();
           });
         });
 
@@ -498,30 +559,43 @@
         });
 
         scoreboardBody.querySelectorAll(".scrabble-round-input").forEach((input) => {
+          const tryCommitActiveInput = async () => {
+            const playerId = input.getAttribute("data-player-id");
+            const expectedRoundNumber = Number.parseInt(input.getAttribute("data-active-round-number"), 10);
+            if (!playerId || !Number.isInteger(expectedRoundNumber)) {
+              return;
+            }
+
+            try {
+              await commitActiveRoundScore(playerId, input.value, expectedRoundNumber);
+            } catch (error) {
+              alert(error.message);
+              input.value = game.getActiveRoundScore(playerId) ?? "";
+            }
+          };
+
           input.addEventListener("keydown", async (event) => {
             if (event.key !== "Enter") {
               return;
             }
             event.preventDefault();
 
-            const playerId = input.getAttribute("data-player-id");
-            const parsed = parseInputInteger(input.value);
-            try {
-              game.applyActiveRoundScoreUpdate({
-                playerId,
-                value: parsed,
-              });
+            await tryCommitActiveInput();
+          });
 
-              if (game.canAdvanceRound(session.playerIds)) {
-                game.advanceRound(session.playerIds);
-              }
+          input.addEventListener("change", async () => {
+            await tryCommitActiveInput();
+          });
 
-              renderScoreboardRows();
-              await updateSessionGameState(db, session.id, game.getState(), null);
-            } catch (error) {
-              alert(error.message);
-              input.value = game.getActiveRoundScore(playerId) ?? "";
+          input.addEventListener("blur", async () => {
+            if (pendingCompletedCellEdit) {
+              const { roundIndex, playerId } = pendingCompletedCellEdit;
+              pendingCompletedCellEdit = null;
+              startCompletedCellEdit(roundIndex, playerId);
+              return;
             }
+
+            await tryCommitActiveInput();
           });
         });
 
@@ -579,6 +653,9 @@
 
     endGameButton?.addEventListener("click", openEndConfirmModal);
     endConfirmCancel?.addEventListener("click", closeEndConfirmModal);
+    endConfirmHome?.addEventListener("click", () => {
+      window.location.href = routePath("home");
+    });
     endConfirmSubmit?.addEventListener("click", async () => {
       try {
         await completeSession(db, session.id, game.getState());

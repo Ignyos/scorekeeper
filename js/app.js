@@ -233,6 +233,23 @@
     `;
   }
 
+  function aboutLogoPath() {
+    const path = window.location.pathname.toLowerCase();
+    const inSubFolder =
+      path.includes("/yahtzee/") ||
+      path.includes("/scrabble/") ||
+      path.includes("/threetothirteen/") ||
+      path.includes("/settings/") ||
+      path.includes("/players/") ||
+      path.includes("/history/");
+
+    if (!isFileMode()) {
+      return "/images/ignyos-logo.ico";
+    }
+
+    return inSubFolder ? "../images/ignyos-logo.ico" : "./images/ignyos-logo.ico";
+  }
+
   function aboutModalHtml() {
     return `
       <div class="modal-backdrop" id="about-modal" hidden>
@@ -240,7 +257,10 @@
           <h2 id="about-modal-title">About Scorekeeper</h2>
           <p>Scorekeeper is a simple local app for tracking game night scores in your browser.</p>
           <p class="muted">Game data is stored on this device.</p>
-          <p><a class="about-link" href="https://ignyos.com" target="_blank" rel="noopener noreferrer">Visit ignyos.com</a></p>
+          <p class="about-link-row">
+            <img class="about-logo" src="${aboutLogoPath()}" alt="Ignyos logo" />
+            <a class="about-link" href="https://ignyos.com" target="_blank" rel="noopener noreferrer">Visit ignyos.com</a>
+          </p>
           <div class="row start-game-actions">
             <button type="button" id="close-about-modal">Close</button>
           </div>

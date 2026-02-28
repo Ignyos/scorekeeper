@@ -248,7 +248,8 @@
           <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ttt-end-confirm-title">
             <h2 id="ttt-end-confirm-title">End Three to Thirteen Game</h2>
             <p id="ttt-end-confirm-text"></p>
-            <div class="row start-game-actions">
+            <div class="row start-game-actions ttt-end-confirm-actions">
+              <button type="button" id="ttt-end-confirm-home">Home</button>
               <button type="button" id="ttt-end-confirm-submit">End Game</button>
               <button type="button" id="ttt-end-confirm-cancel">Cancel</button>
             </div>
@@ -272,6 +273,7 @@
 
     const endConfirmModal = document.getElementById("ttt-end-confirm-modal");
     const endConfirmText = document.getElementById("ttt-end-confirm-text");
+    const endConfirmHome = document.getElementById("ttt-end-confirm-home");
     const endConfirmSubmit = document.getElementById("ttt-end-confirm-submit");
     const endConfirmCancel = document.getElementById("ttt-end-confirm-cancel");
 
@@ -510,6 +512,9 @@
 
     endGameButton?.addEventListener("click", openEndConfirmModal);
     endConfirmCancel?.addEventListener("click", closeEndConfirmModal);
+    endConfirmHome?.addEventListener("click", () => {
+      window.location.href = routePath("home");
+    });
     endConfirmSubmit?.addEventListener("click", async () => {
       try {
         await completeSession(db, session.id, game.getState());
