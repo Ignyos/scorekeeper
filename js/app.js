@@ -227,8 +227,25 @@
           <a href="${routePath("players")}" role="menuitem">Manage Players</a>
           <a href="${routePath("history")}" role="menuitem">History / Continue</a>
           <a href="${routePath("settings")}" role="menuitem">Settings</a>
+          <button type="button" role="menuitem" id="open-about-modal">About</button>
         </div>
       </details>
+    `;
+  }
+
+  function aboutModalHtml() {
+    return `
+      <div class="modal-backdrop" id="about-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+          <h2 id="about-modal-title">About Scorekeeper</h2>
+          <p>Scorekeeper is a simple local app for tracking game night scores in your browser.</p>
+          <p class="muted">Game data is stored on this device.</p>
+          <p><a class="about-link" href="https://ignyos.com" target="_blank" rel="noopener noreferrer">Visit ignyos.com</a></p>
+          <div class="row start-game-actions">
+            <button type="button" id="close-about-modal">Close</button>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -281,6 +298,7 @@
         ${heading ? `<h1>${heading}</h1>` : ""}
         ${innerHtml}
       </div>
+      ${aboutModalHtml()}
     `;
 
     const menuRoot = document.getElementById("main-menu");
@@ -302,6 +320,33 @@
         { capture: true },
       );
     }
+
+    const aboutModal = document.getElementById("about-modal");
+    const openAboutButton = document.getElementById("open-about-modal");
+    const closeAboutButton = document.getElementById("close-about-modal");
+
+    function closeAboutModal() {
+      if (aboutModal) {
+        aboutModal.hidden = true;
+      }
+    }
+
+    openAboutButton?.addEventListener("click", () => {
+      if (menuRoot) {
+        menuRoot.open = false;
+      }
+      if (aboutModal) {
+        aboutModal.hidden = false;
+      }
+    });
+
+    closeAboutButton?.addEventListener("click", closeAboutModal);
+
+    aboutModal?.addEventListener("click", (event) => {
+      if (event.target === aboutModal) {
+        closeAboutModal();
+      }
+    });
   }
 
   async function persistState(db, state) {
