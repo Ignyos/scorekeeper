@@ -31,6 +31,7 @@
     const inSubFolder =
       path.includes("/yahtzee/") ||
       path.includes("/scrabble/") ||
+      path.includes("/threetothirteen/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -39,6 +40,7 @@
       if (routeName === "home") return "/";
       if (routeName === "yahtzee") return "/yahtzee";
       if (routeName === "scrabble") return "/scrabble";
+      if (routeName === "threetothirteen") return "/threetothirteen";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -55,6 +57,10 @@
     if (routeName === "scrabble") {
       if (path.includes("/scrabble/")) return "./index.html";
       return inSubFolder ? "../scrabble/index.html" : "./scrabble/index.html";
+    }
+    if (routeName === "threetothirteen") {
+      if (path.includes("/threetothirteen/")) return "./index.html";
+      return inSubFolder ? "../threetothirteen/index.html" : "./threetothirteen/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -236,6 +242,7 @@
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="start-game-title">
           <h2 id="start-game-title">${escapeHtml(gameTitle)}: Select Players</h2>
           <p class="muted start-game-note">Choose at least 2 players.</p>
+          <p class="muted start-game-order-note">Selection order sets player order.</p>
 
           <div class="row start-game-section">
             <select id="start-game-player-select" aria-label="Select player">
@@ -635,6 +642,31 @@
         .sort((left, right) => right.total - left.total);
     }
 
+    if (gameKey === "threetothirteen") {
+      const totalsByPlayer = {};
+      for (const playerId of playerIds) {
+        totalsByPlayer[playerId] = 0;
+      }
+
+      const rounds = Array.isArray(gameState.rounds) ? gameState.rounds : [];
+      rounds.forEach((round) => {
+        const scoresByPlayer = round?.scoresByPlayer || {};
+        playerIds.forEach((playerId) => {
+          const value = scoresByPlayer[playerId];
+          if (Number.isInteger(value)) {
+            totalsByPlayer[playerId] += value;
+          }
+        });
+      });
+
+      return playerIds
+        .map((playerId) => ({
+          playerId,
+          total: totalsByPlayer[playerId] || 0,
+        }))
+        .sort((left, right) => left.total - right.total);
+    }
+
     const totalsByPlayer = gameState.totalsByPlayer || {};
     if (totalsByPlayer && typeof totalsByPlayer === "object") {
       const rows = Object.keys(totalsByPlayer)
@@ -684,6 +716,32 @@
     }
 
     await renderScrabblePage(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+    });
+  }
+
+  async function renderThreeToThirteen(db) {
+    const renderThreeToThirteenPage = window.ScorekeeperGamesUI?.renderThreeToThirteenPage;
+    if (typeof renderThreeToThirteenPage !== "function") {
+      throw new Error("Three to Thirteen page renderer is unavailable");
+    }
+
+    await renderThreeToThirteenPage(db, {
       parseSessionId,
       listPlayers,
       renderShell,
@@ -753,6 +811,10 @@
         }
         if (route.slug === "scrabble") {
           await renderScrabble(db);
+          return;
+        }
+        if (route.slug === "threetothirteen") {
+          await renderThreeToThirteen(db);
           return;
         }
       }

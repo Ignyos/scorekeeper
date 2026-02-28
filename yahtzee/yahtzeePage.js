@@ -98,6 +98,7 @@
       }
 
       let selectedPlayerIds = [];
+      let launchedFromHomeNew = false;
 
       function openModal() {
         modal.hidden = false;
@@ -107,18 +108,65 @@
         modal.hidden = true;
       }
 
+      function handleCancel() {
+        if (launchedFromHomeNew) {
+          window.location.href = routePath("home");
+          return;
+        }
+        closeModal();
+      }
+
+      function moveSelectedPlayer(playerId, direction) {
+        const currentIndex = selectedPlayerIds.indexOf(playerId);
+        if (currentIndex < 0) {
+          return;
+        }
+
+        const nextIndex = currentIndex + direction;
+        if (nextIndex < 0 || nextIndex >= selectedPlayerIds.length) {
+          return;
+        }
+
+        const reordered = [...selectedPlayerIds];
+        const [movedPlayerId] = reordered.splice(currentIndex, 1);
+        reordered.splice(nextIndex, 0, movedPlayerId);
+        selectedPlayerIds = reordered;
+      }
+
       function renderSelectedPlayers() {
         selectedList.innerHTML = selectedPlayerIds
-          .map((playerId) => {
+          .map((playerId, index) => {
             const playerName = playerById[playerId]?.name || playerId;
             return `
               <li class="selected-player-item">
-                <span>${escapeHtml(playerName)}</span>
-                <button type="button" data-remove-selected-player="${playerId}" aria-label="Remove ${escapeHtml(playerName)}">×</button>
+                <span class="selected-player-label">
+                  ${escapeHtml(playerName)}
+                </span>
+                <span class="selected-player-actions">
+                  <button type="button" data-move-selected-player-up="${playerId}" aria-label="Move ${escapeHtml(playerName)} up" ${index === 0 ? "disabled" : ""}>↑</button>
+                  <button type="button" data-move-selected-player-down="${playerId}" aria-label="Move ${escapeHtml(playerName)} down" ${index === selectedPlayerIds.length - 1 ? "disabled" : ""}>↓</button>
+                  <button type="button" data-remove-selected-player="${playerId}" aria-label="Remove ${escapeHtml(playerName)}">×</button>
+                </span>
               </li>
             `;
           })
           .join("");
+
+        selectedList.querySelectorAll("[data-move-selected-player-up]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const playerId = button.getAttribute("data-move-selected-player-up");
+            moveSelectedPlayer(playerId, -1);
+            renderSelectedPlayers();
+          });
+        });
+
+        selectedList.querySelectorAll("[data-move-selected-player-down]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const playerId = button.getAttribute("data-move-selected-player-down");
+            moveSelectedPlayer(playerId, 1);
+            renderSelectedPlayers();
+          });
+        });
 
         selectedList.querySelectorAll("[data-remove-selected-player]").forEach((button) => {
           button.addEventListener("click", () => {
@@ -130,7 +178,7 @@
       }
 
       openButton?.addEventListener("click", openModal);
-      cancelButton?.addEventListener("click", closeModal);
+      cancelButton?.addEventListener("click", handleCancel);
 
       playerSelect?.addEventListener("change", () => {
         const playerId = playerSelect.value;
@@ -145,6 +193,7 @@
       });
 
       if (shouldAutoOpenNewGame()) {
+        launchedFromHomeNew = true;
         openModal();
         clearNewGameQueryParam();
       }
