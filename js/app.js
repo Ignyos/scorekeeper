@@ -270,6 +270,7 @@
   }
 
   function renderShell(title, innerHtml) {
+    const heading = String(title || "").trim();
     app.innerHTML = `
       <header class="topbar">
         <div class="topbar-inner">
@@ -277,7 +278,7 @@
         </div>
       </header>
       <div class="container">
-        <h1>${title}</h1>
+        ${heading ? `<h1>${heading}</h1>` : ""}
         ${innerHtml}
       </div>
     `;

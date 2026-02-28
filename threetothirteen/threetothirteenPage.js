@@ -32,19 +32,9 @@
     const sessionId = parseSessionId();
     if (!sessionId) {
       const players = await listPlayers(db, { includeDeleted: false });
-      renderShell(
-        "Three to Thirteen",
-        `
-          <section class="card">
-            <p>Start a new Three to Thirteen session.</p>
-            <button type="button" id="open-start-game">New Game</button>
-          </section>
-          ${startGameModalHtml("Three to Thirteen", players)}
-        `,
-      );
+      renderShell("", startGameModalHtml("Three to Thirteen", players));
 
       const modal = document.getElementById("start-game-modal");
-      const openButton = document.getElementById("open-start-game");
       const cancelButton = document.getElementById("start-game-cancel");
       const submitButton = document.getElementById("start-game-submit");
       const addPlayerButton = document.getElementById("start-game-add-player");
@@ -58,22 +48,13 @@
       }
 
       let selectedPlayerIds = [];
-      let launchedFromHomeNew = false;
 
       function openModal() {
         modal.hidden = false;
       }
 
-      function closeModal() {
-        modal.hidden = true;
-      }
-
       function handleCancel() {
-        if (launchedFromHomeNew) {
-          window.location.href = routePath("home");
-          return;
-        }
-        closeModal();
+        window.location.href = routePath("home");
       }
 
       function moveSelectedPlayer(playerId, direction) {
@@ -135,7 +116,6 @@
         });
       }
 
-      openButton?.addEventListener("click", openModal);
       cancelButton?.addEventListener("click", handleCancel);
 
       playerSelect?.addEventListener("change", () => {
@@ -150,9 +130,8 @@
         playerSelect.value = "";
       });
 
+      openModal();
       if (shouldAutoOpenNewGame()) {
-        launchedFromHomeNew = true;
-        openModal();
         clearNewGameQueryParam();
       }
 
@@ -424,12 +403,7 @@
       }
 
       scoreboardBody.querySelectorAll(".ttt-score-input").forEach((input) => {
-        input.addEventListener("keydown", async (event) => {
-          if (event.key !== "Enter") {
-            return;
-          }
-          event.preventDefault();
-
+        const commitScore = async (moveFocusAfterCommit) => {
           const roundIndex = Number.parseInt(input.getAttribute("data-round-index"), 10);
           const playerId = input.getAttribute("data-player-id");
           if (!Number.isInteger(roundIndex) || !playerId) {
@@ -445,11 +419,30 @@
             });
             await updateSessionGameState(db, session.id, game.getState(), null);
             renderScoreboard();
-            moveFocusToNextScoreInput(roundIndex, playerId);
+            if (moveFocusAfterCommit) {
+              moveFocusToNextScoreInput(roundIndex, playerId);
+            }
           } catch (error) {
             alert(error.message);
           }
+        };
+
+        input.addEventListener("keydown", async (event) => {
+          if (event.key !== "Enter") {
+            return;
+          }
+          event.preventDefault();
+
+            await commitScore(true);
         });
+
+          input.addEventListener("change", async () => {
+            await commitScore(false);
+          });
+
+          input.addEventListener("blur", async () => {
+            await commitScore(false);
+          });
       });
 
       scoreboardBody.querySelectorAll(".ttt-winner-radio").forEach((radio) => {
@@ -470,18 +463,6 @@
         });
       });
 
-      const firstEmptyRound = rounds.findIndex((round) => {
-        return session.playerIds.some((playerId) => !Number.isInteger(round.scoresByPlayer[playerId]));
-      });
-      const focusRoundIndex = firstEmptyRound >= 0 ? firstEmptyRound : 0;
-      const firstInput = scoreboardBody.querySelector(roundScoreInputSelector(focusRoundIndex, session.playerIds[0]));
-      if (firstInput instanceof HTMLInputElement) {
-        try {
-          firstInput.focus({ preventScroll: true });
-        } catch {
-          firstInput.focus();
-        }
-      }
     }
 
     function openEndConfirmModal() {

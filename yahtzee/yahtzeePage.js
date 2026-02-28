@@ -72,19 +72,9 @@
     const sessionId = parseSessionId();
     if (!sessionId) {
       const players = await listPlayers(db, { includeDeleted: false });
-      renderShell(
-        "Yahtzee",
-        `
-          <section class="card">
-            <p>Start a new Yahtzee session.</p>
-            <button type="button" id="open-start-game">New Game</button>
-          </section>
-          ${startGameModalHtml("Yahtzee", players)}
-        `,
-      );
+      renderShell("", startGameModalHtml("Yahtzee", players));
 
       const modal = document.getElementById("start-game-modal");
-      const openButton = document.getElementById("open-start-game");
       const cancelButton = document.getElementById("start-game-cancel");
       const submitButton = document.getElementById("start-game-submit");
       const addPlayerButton = document.getElementById("start-game-add-player");
@@ -98,22 +88,13 @@
       }
 
       let selectedPlayerIds = [];
-      let launchedFromHomeNew = false;
 
       function openModal() {
         modal.hidden = false;
       }
 
-      function closeModal() {
-        modal.hidden = true;
-      }
-
       function handleCancel() {
-        if (launchedFromHomeNew) {
-          window.location.href = routePath("home");
-          return;
-        }
-        closeModal();
+        window.location.href = routePath("home");
       }
 
       function moveSelectedPlayer(playerId, direction) {
@@ -177,7 +158,6 @@
         });
       }
 
-      openButton?.addEventListener("click", openModal);
       cancelButton?.addEventListener("click", handleCancel);
 
       playerSelect?.addEventListener("change", () => {
@@ -192,9 +172,8 @@
         playerSelect.value = "";
       });
 
+      openModal();
       if (shouldAutoOpenNewGame()) {
-        launchedFromHomeNew = true;
-        openModal();
         clearNewGameQueryParam();
       }
 
