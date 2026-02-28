@@ -1,20 +1,28 @@
 ## Overview
-This release adds an About entry in the main menu, introduces a simple About modal with an Ignyos link, and fixes the GitHub Pages deployment workflow configuration.
+This release adds in-app game rules across Home and active game screens, improves Scrabble score-entry/editing behavior, and refines game UI layout and branding assets.
 
 ## New Features
-- **About Menu Item**: Adds an About action to the main menu for quick access to site information.
-- **About Modal**: Opens a simple About dialog with a short site description and a direct link to ignyos.com.
+- **Game Rules Modal**: Adds detailed in-app rules for Yahtzee, Scrabble, and Three Thirteen in a shared modal.
+- **Rules Access from Home**: Adds a Rules badge on each Home game card for quick rules access before starting.
+- **Rules Access During Games**: Adds a Rules button on each game action row so players can review rules mid-session.
 
 ## Improvements
-- **About Link Styling**: Keeps the About modal link in the app’s blue accent color, including the visited state.
-- **Menu Visual Consistency**: Matches About button hover, spacing, and text size with other menu items.
+- **Rules Modal Usability**: Limits rules modal height to 90% of the viewport and enables internal scrolling for long rule content.
+- **End-Game Modal Actions**: Adds a Home option in game end confirmation modals and uses a consistent left/center/right action layout.
+- **Three Thirteen Scoreboard Layout**: Uses a more compact per-cell layout with score and winner controls on one row and the Win label above its radio.
+- **About Modal Branding**: Shows the Ignyos logo next to the ignyos.com link in the About modal.
+- **Game Naming Clarity**: Updates user-facing text from “Three to Thirteen” to “Three Thirteen”.
 
 ## Bug Fixes
-- **GitHub Pages Deploy Job**: Adds the required `github-pages` environment so the Pages deployment action runs without the "Missing environment" error.
+- **Scrabble Round Progression**: Fixes active row commits so new rows are created reliably when a round is completed.
+- **Scrabble Extra Blank Row**: Keeps one trailing blank row visible to make upcoming score entry clearer.
+- **Scrabble Completed-Cell Editing**: Fixes completed-cell edit interactions and switches to full-cell tap/click editing for better mobile usability.
+- **Scrabble Cross-Row Input Carryover**: Prevents stale input events from copying values into the next round.
 
 ## Technical Changes
-- **Shared Shell Modal Integration**: Renders the About modal from the shared shell so it is available across app pages.
-- **Menu Button Support**: Adds menu-panel button styling to support non-link menu actions with existing menu layout behavior.
+- **Shared Rules Infrastructure**: Adds centralized rules content, modal rendering, trigger helpers, and URL-state handling in the app shell.
+- **Game Page Integration**: Wires rules trigger helpers into Yahtzee, Scrabble, and Three Thirteen page render flows.
+- **Brand Asset Organization**: Moves favicon references to the `images` folder, removes the root `.ico`, and adds `ignyos-logo.png` and `ignyos-logo.svg` assets.
 
 ## Installation
 1. Clone this repository
