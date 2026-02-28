@@ -1,24 +1,23 @@
 ## Overview
-This release adds full Scrabble support with round-based scoring, in-game score correction for completed rounds, and route/session updates so Scrabble works end-to-end across Home, game play, and History.
+This release adds full Three to Thirteen support, updates new-game player ordering across game setup flows, and applies a consistent site icon across pages.
 
 ## New Features
-- **Scrabble Game Mode**: Adds a dedicated Scrabble game page with New Game flow, player selection, and session persistence.
-- **Round-Based Scrabble Scoreboard**: Uses a round table with one active input row, auto-advances when all players submit valid round scores, and keeps running totals visible.
-- **Completed Round Score Editing**: Lets players correct previously entered Scrabble scores during active games using per-cell edit controls.
+- **Three to Thirteen Game Mode**: Adds a dedicated Three to Thirteen game with 11 rounds (3 through 13), rotating dealer assignment, per-round winner selection, and lowest-total scoring.
+- **Three to Thirteen Session Flow**: Adds start, play, and end-game flows with session persistence, final results ranking, and Home return after completion.
 
 ## Improvements
-- **Scrabble Score Entry UX**: Focuses the next active Scrabble input automatically and commits values on Enter for faster turn-by-turn entry.
-- **Scrabble Table Styling**: Improves readability with dedicated Scrabble table layout, active-row highlighting, and cleaner number inputs.
-- **Game Routing Coverage**: Adds Scrabble route handling for both standard and file-based paths.
+- **Player Order Controls**: Adds move-up and move-down controls in game setup so selected players can be reordered before starting.
+- **Start Game Clarity**: Adds a setup note that selection order determines player order.
+- **New Game Entry Flow**: Opens the player selection modal immediately on new game pages for Yahtzee, Scrabble, and Three to Thirteen.
+- **Page Branding Consistency**: Adds the Ignyos favicon to Home and game/support pages for a consistent browser tab icon.
 
 ## Bug Fixes
-- **History Continue Links**: Fixes Continue links to open the correct game route instead of always routing to Yahtzee.
-- **Scrabble History Outcomes**: Resolves "Outcome unavailable" for Scrabble sessions by computing results from round-based game state when needed.
+- **Three to Thirteen History Ranking**: Computes completed-game totals from round scores and sorts by lowest total so outcomes display correctly for Three to Thirteen sessions.
 
 ## Technical Changes
-- **Game Registry Expansion**: Registers Scrabble in the game registry for Home and History integration.
-- **Session Metadata Support**: Updates session creation to store game-specific metadata (`game`, `gameClass`, `gameVersion`) instead of hardcoded Yahtzee values.
-- **Scrabble Modules**: Adds `scrabble/ScrabbleGame.js`, `scrabble/scrabblePage.js`, and `scrabble/index.html`.
+- **Game Registration & Routing**: Registers Three to Thirteen in the game registry and adds route handling for standard and subfolder paths.
+- **Three to Thirteen Modules**: Adds `threetothirteen/ThreeToThirteenGame.js`, `threetothirteen/threetothirteenPage.js`, and `threetothirteen/index.html`.
+- **Three to Thirteen Styling**: Adds dedicated table, score input, and winner toggle styles for the new scoreboard UI.
 
 ## Installation
 1. Clone this repository
