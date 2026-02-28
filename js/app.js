@@ -32,6 +32,7 @@
       path.includes("/yahtzee/") ||
       path.includes("/scrabble/") ||
       path.includes("/threetothirteen/") ||
+      path.includes("/trepenta/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -41,6 +42,7 @@
       if (routeName === "yahtzee") return "/yahtzee";
       if (routeName === "scrabble") return "/scrabble";
       if (routeName === "threetothirteen") return "/threetothirteen";
+      if (routeName === "trepenta") return "/trepenta";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -61,6 +63,10 @@
     if (routeName === "threetothirteen") {
       if (path.includes("/threetothirteen/")) return "./index.html";
       return inSubFolder ? "../threetothirteen/index.html" : "./threetothirteen/index.html";
+    }
+    if (routeName === "trepenta") {
+      if (path.includes("/trepenta/")) return "./index.html";
+      return inSubFolder ? "../trepenta/index.html" : "./trepenta/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -325,6 +331,31 @@
         <p>Play through all 11 rounds. The player with the lowest cumulative score wins.</p>
       `,
     },
+    trepenta: {
+      title: "Trepenta Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Finish five rounds with the lowest total points by making sets and runs in hand while managing your field.</p>
+        <h3>Turn Sequence</h3>
+        <ul>
+          <li>Draw one card from the draw pile or discard pile.</li>
+          <li>Exchange (optional) one hand card with a valid field position when allowed by your selected rules.</li>
+          <li>Discard one card to end your turn.</li>
+        </ul>
+        <h3>Round and Scoring</h3>
+        <ul>
+          <li>The game plays exactly five rounds.</li>
+          <li>Sets and runs score 0; non-melded cards score penalty points.</li>
+          <li>Ace = 1 point, 2-10 = face value, J/Q/K = 10 points.</li>
+          <li>Lowest total after round five wins.</li>
+        </ul>
+        <h3>Field and House Rules</h3>
+        <ul>
+          <li>Each game stores selected house rules and deck configuration as part of session state.</li>
+          <li>The setup screen records your exact Trepenta configuration for history and continuation.</li>
+        </ul>
+      `,
+    },
   };
 
   function menuHtml() {
@@ -348,6 +379,7 @@
       path.includes("/yahtzee/") ||
       path.includes("/scrabble/") ||
       path.includes("/threetothirteen/") ||
+      path.includes("/trepenta/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -379,9 +411,11 @@
   }
 
   function rulesTriggerHtml(gameSlug, options) {
-    const context = options?.context === "game" ? "game" : "home";
+    const requestedContext = String(options?.context || "home").toLowerCase();
+    const context = requestedContext === "game" || requestedContext === "stay" ? requestedContext : "home";
     const variant = options?.variant === "badge" ? "badge" : "inline";
     const sessionId = options?.sessionId ? String(options.sessionId) : "";
+    const label = String(options?.label || "Rules").trim() || "Rules";
     const className = variant === "badge" ? "rules-trigger rules-trigger-badge" : "rules-trigger";
 
     return `
@@ -392,7 +426,7 @@
         data-rules-game="${escapeHtml(gameSlug)}"
         data-rules-context="${escapeHtml(context)}"
         data-rules-session-id="${escapeHtml(sessionId)}"
-      >Rules</button>
+      >${escapeHtml(label)}</button>
     `;
   }
 
@@ -420,7 +454,7 @@
     }
     return {
       game,
-      context: context === "game" ? "game" : "home",
+      context: context === "game" || context === "stay" ? context : "home",
       sessionId,
     };
   }
@@ -569,7 +603,7 @@
         return;
       }
 
-      currentRulesContext = context === "game" ? "game" : "home";
+      currentRulesContext = context === "game" || context === "stay" ? context : "home";
       currentRulesGameSlug = gameSlug;
       currentRulesSessionId = sessionId || "";
       rulesModalTitle.textContent = rules.title;
@@ -580,6 +614,12 @@
 
     function closeRulesModal() {
       if (!rulesModal) {
+        return;
+      }
+
+      if (currentRulesContext === "stay") {
+        clearRulesParams();
+        rulesModal.hidden = true;
         return;
       }
 
@@ -653,8 +693,8 @@
             <h2>${escapeHtml(title)}</h2>
             <p class="muted">${escapeHtml(description)}</p>
             <div class="row home-game-actions">
-              <a href="${routePath(gameDef.slug)}?new=1">New</a>
-              <a href="${routePath("history")}?game=${encodeURIComponent(gameDef.slug)}">Continue</a>
+              <button type="button" data-home-new="${escapeHtml(gameDef.slug)}">New</button>
+              <button type="button" data-home-continue="${escapeHtml(gameDef.slug)}">Continue</button>
             </div>
           </article>
         `;
@@ -665,7 +705,7 @@
       "Scorekeeper",
       `
         <section class="home-hero">
-          <p class="home-mission">Simple local score tracking for game night.</p>
+          <p class="home-mission">Simple score tracking for any of these game.</p>
           <p class="muted">Your data stays in this browser.</p>
           <section class="home-game-grid">
             ${homeGameCards}
@@ -673,6 +713,26 @@
         </section>
       `,
     );
+
+    document.querySelectorAll("[data-home-new]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const gameSlug = button.getAttribute("data-home-new");
+        if (!gameSlug) {
+          return;
+        }
+        window.location.href = `${routePath(gameSlug)}?new=1`;
+      });
+    });
+
+    document.querySelectorAll("[data-home-continue]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const gameSlug = button.getAttribute("data-home-continue");
+        if (!gameSlug) {
+          return;
+        }
+        window.location.href = `${routePath("history")}?game=${encodeURIComponent(gameSlug)}`;
+      });
+    });
   }
 
   async function renderPlayers(db) {
@@ -828,6 +888,46 @@
           : `<p class="muted">Outcome unavailable.</p>`;
 
         const isActive = session.status === "active";
+        const trepentaSettings = gameKey === "trepenta" ? session?.gameState?.settings || {} : null;
+        const trepentaDeckConfig = trepentaSettings?.deckConfig || null;
+        const trepentaRules = Array.isArray(trepentaSettings?.selectedRules)
+          ? trepentaSettings.selectedRules
+          : Array.isArray(trepentaSettings?.selectedRuleKeys)
+            ? trepentaSettings.selectedRuleKeys.map((ruleKey) => ({
+                key: ruleKey,
+                name: String(ruleKey || "")
+                  .split("-")
+                  .filter(Boolean)
+                  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                  .join(" "),
+              }))
+            : [];
+
+        const trepentaDeckSummary = trepentaDeckConfig
+          ? trepentaDeckConfig.type === "trepenta"
+            ? `Trepenta deck (${trepentaDeckConfig.count || 4} suit${(trepentaDeckConfig.count || 4) === 1 ? "" : "s"})`
+            : `${trepentaDeckConfig.count || 1} standard deck${(trepentaDeckConfig.count || 1) === 1 ? "" : "s"}`
+          : "";
+
+        const trepentaRulesHtml =
+          gameKey === "trepenta"
+            ? `
+              <div class="session-meta">
+                <p class="muted"><strong>Deck:</strong> ${escapeHtml(trepentaDeckSummary || "Not set")}</p>
+                <div class="session-rule-list">
+                  <strong>House Rules:</strong>
+                  ${
+                    trepentaRules.length
+                      ? `<span class="session-rule-badges">${trepentaRules
+                          .map((rule) => `<span class="session-rule-badge">${escapeHtml(rule.name || rule.key || "Rule")}</span>`)
+                          .join("")}</span>`
+                      : `<span class="muted">None</span>`
+                  }
+                </div>
+              </div>
+            `
+            : "";
+
         const continueAction = isActive
           ? `<a class="session-action" href="${withSessionId(routePath(gameKey), session.id)}">Continue</a>`
           : "";
@@ -840,6 +940,7 @@
               <p class="muted session-window">${escapeHtml(sessionWindow)}</p>
             </div>
             <p class="muted">${playerNames || "None"}</p>
+            ${trepentaRulesHtml}
             <div class="session-detail">
               ${detailBody}
               <div class="row session-actions">
@@ -993,6 +1094,31 @@
         .sort((left, right) => left.total - right.total);
     }
 
+    if (gameKey === "trepenta") {
+      const totalsByPlayer = {};
+      for (const playerId of playerIds) {
+        totalsByPlayer[playerId] = 0;
+      }
+
+      const rounds = Array.isArray(gameState.rounds) ? gameState.rounds : [];
+      rounds.forEach((round) => {
+        const scoresByPlayer = round?.scoresByPlayer || {};
+        playerIds.forEach((playerId) => {
+          const value = scoresByPlayer[playerId];
+          if (Number.isInteger(value)) {
+            totalsByPlayer[playerId] += value;
+          }
+        });
+      });
+
+      return playerIds
+        .map((playerId) => ({
+          playerId,
+          total: totalsByPlayer[playerId] || 0,
+        }))
+        .sort((left, right) => left.total - right.total);
+    }
+
     const totalsByPlayer = gameState.totalsByPlayer || {};
     if (totalsByPlayer && typeof totalsByPlayer === "object") {
       const rows = Object.keys(totalsByPlayer)
@@ -1090,6 +1216,33 @@
     });
   }
 
+  async function renderTrepenta(db) {
+    const renderTrepentaPage = window.ScorekeeperGamesUI?.renderTrepentaPage;
+    if (typeof renderTrepentaPage !== "function") {
+      throw new Error("Trepenta page renderer is unavailable");
+    }
+
+    await renderTrepentaPage(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+      rulesTriggerHtml,
+    });
+  }
+
   function renderNotFound() {
     renderShell(
       "Not Found",
@@ -1144,6 +1297,10 @@
         }
         if (route.slug === "threetothirteen") {
           await renderThreeToThirteen(db);
+          return;
+        }
+        if (route.slug === "trepenta") {
+          await renderTrepenta(db);
           return;
         }
       }

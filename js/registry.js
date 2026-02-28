@@ -20,6 +20,13 @@ const gameRegistry = {
     className: "ThreeToThirteenGame",
     load: async () => window.ScorekeeperGames?.ThreeToThirteenGame || null,
   },
+  trepenta: {
+    slug: "trepenta",
+    title: "Trepenta",
+    description: "Track five rounds with configurable house rules and lowest-score wins.",
+    className: "TrepentaGame",
+    load: async () => window.ScorekeeperGames?.TrepentaGame || null,
+  },
 };
 
 async function loadGameClassBySlug(slug) {

@@ -30,6 +30,10 @@ function getRouteFromPath(pathname) {
     return { key: "game", slug: "threetothirteen" };
   }
 
+  if (cleanPath.endsWith("/trepenta") || cleanPath.endsWith("/trepenta/index.html")) {
+    return { key: "game", slug: "trepenta" };
+  }
+
   const fileModeGameMatch = cleanPath.match(/^\/(?!settings|players|history)([^/]+)\/index\.html$/);
   if (fileModeGameMatch) {
     return { key: "game", slug: fileModeGameMatch[1].toLowerCase() };
