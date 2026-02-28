@@ -1,23 +1,20 @@
 ## Overview
-This release adds full Three to Thirteen support, updates new-game player ordering across game setup flows, and applies a consistent site icon across pages.
+This release adds an About entry in the main menu, introduces a simple About modal with an Ignyos link, and fixes the GitHub Pages deployment workflow configuration.
 
 ## New Features
-- **Three to Thirteen Game Mode**: Adds a dedicated Three to Thirteen game with 11 rounds (3 through 13), rotating dealer assignment, per-round winner selection, and lowest-total scoring.
-- **Three to Thirteen Session Flow**: Adds start, play, and end-game flows with session persistence, final results ranking, and Home return after completion.
+- **About Menu Item**: Adds an About action to the main menu for quick access to site information.
+- **About Modal**: Opens a simple About dialog with a short site description and a direct link to ignyos.com.
 
 ## Improvements
-- **Player Order Controls**: Adds move-up and move-down controls in game setup so selected players can be reordered before starting.
-- **Start Game Clarity**: Adds a setup note that selection order determines player order.
-- **New Game Entry Flow**: Opens the player selection modal immediately on new game pages for Yahtzee, Scrabble, and Three to Thirteen.
-- **Page Branding Consistency**: Adds the Ignyos favicon to Home and game/support pages for a consistent browser tab icon.
+- **About Link Styling**: Keeps the About modal link in the app’s blue accent color, including the visited state.
+- **Menu Visual Consistency**: Matches About button hover, spacing, and text size with other menu items.
 
 ## Bug Fixes
-- **Three to Thirteen History Ranking**: Computes completed-game totals from round scores and sorts by lowest total so outcomes display correctly for Three to Thirteen sessions.
+- **GitHub Pages Deploy Job**: Adds the required `github-pages` environment so the Pages deployment action runs without the "Missing environment" error.
 
 ## Technical Changes
-- **Game Registration & Routing**: Registers Three to Thirteen in the game registry and adds route handling for standard and subfolder paths.
-- **Three to Thirteen Modules**: Adds `threetothirteen/ThreeToThirteenGame.js`, `threetothirteen/threetothirteenPage.js`, and `threetothirteen/index.html`.
-- **Three to Thirteen Styling**: Adds dedicated table, score input, and winner toggle styles for the new scoreboard UI.
+- **Shared Shell Modal Integration**: Renders the About modal from the shared shell so it is available across app pages.
+- **Menu Button Support**: Adds menu-panel button styling to support non-link menu actions with existing menu layout behavior.
 
 ## Installation
 1. Clone this repository
