@@ -1,28 +1,26 @@
 ## Overview
-This release adds in-app game rules across Home and active game screens, improves Scrabble score-entry/editing behavior, and refines game UI layout and branding assets.
+This release adds full Trepenta support, including game setup, score tracking, and end-game results, plus related routing and UI updates.
 
 ## New Features
-- **Game Rules Modal**: Adds detailed in-app rules for Yahtzee, Scrabble, and Three Thirteen in a shared modal.
-- **Rules Access from Home**: Adds a Rules badge on each Home game card for quick rules access before starting.
-- **Rules Access During Games**: Adds a Rules button on each game action row so players can review rules mid-session.
+- **Trepenta Game Mode**: Adds Trepenta as a playable game with five rounds, rotating dealer display, per-round winner selection, and lowest-total scoring.
+- **Trepenta Setup Options**: Adds deck configuration (standard decks or Trepenta suit count) and optional selectable house rules when starting a Trepenta session.
+- **Trepenta Rules Content**: Adds in-app Trepenta rules in the shared Rules modal.
+- **Trepenta Pages and Navigation**: Adds Trepenta to the game registry, routing, and page rendering flow so sessions can be started and resumed.
 
 ## Improvements
-- **Rules Modal Usability**: Limits rules modal height to 90% of the viewport and enables internal scrolling for long rule content.
-- **End-Game Modal Actions**: Adds a Home option in game end confirmation modals and uses a consistent left/center/right action layout.
-- **Three Thirteen Scoreboard Layout**: Uses a more compact per-cell layout with score and winner controls on one row and the Win label above its radio.
-- **About Modal Branding**: Shows the Ignyos logo next to the ignyos.com link in the About modal.
-- **Game Naming Clarity**: Updates user-facing text from “Three to Thirteen” to “Three Thirteen”.
+- **Session Details for Trepenta**: Shows Trepenta deck configuration and selected house rules in history/session cards.
+- **Start Game Modal Scrolling**: Limits start-game modal height and enables internal scrolling for long setup content.
+- **Home Card Actions Layout**: Uses full-width New/Continue buttons in a consistent grid layout on Home game cards.
+- **Trepenta End-Game Actions**: Uses the same left/center/right confirmation action layout as other game end dialogs, including a Home action.
+- **Score Sheet Header Alignment**: Centers row headers in Scrabble and Three Thirteen score sheets for consistent table presentation.
 
 ## Bug Fixes
-- **Scrabble Round Progression**: Fixes active row commits so new rows are created reliably when a round is completed.
-- **Scrabble Extra Blank Row**: Keeps one trailing blank row visible to make upcoming score entry clearer.
-- **Scrabble Completed-Cell Editing**: Fixes completed-cell edit interactions and switches to full-cell tap/click editing for better mobile usability.
-- **Scrabble Cross-Row Input Carryover**: Prevents stale input events from copying values into the next round.
+- **Trepenta Final Totals in Session Views**: Computes Trepenta standings from round scores so rankings display correctly in session summaries.
 
 ## Technical Changes
-- **Shared Rules Infrastructure**: Adds centralized rules content, modal rendering, trigger helpers, and URL-state handling in the app shell.
-- **Game Page Integration**: Wires rules trigger helpers into Yahtzee, Scrabble, and Three Thirteen page render flows.
-- **Brand Asset Organization**: Moves favicon references to the `images` folder, removes the root `.ico`, and adds `ignyos-logo.png` and `ignyos-logo.svg` assets.
+- **New Trepenta Modules**: Adds `trepenta/TrepentaGame.js`, `trepenta/trepentaPage.js`, and `trepenta/index.html`.
+- **App Shell Integration**: Extends route/path helpers and game rendering to include Trepenta.
+- **Trepenta Styling**: Adds Trepenta-specific setup, rules, and scoreboard styles in `css/styles.css`.
 
 ## Installation
 1. Clone this repository
