@@ -1,26 +1,24 @@
 ## Overview
-This release adds full Trepenta support, including game setup, score tracking, and end-game results, plus related routing and UI updates.
+This release improves Home and About messaging, adds smarter Continue availability on game cards, and updates Trepenta house-rule details links to open the official rule sections directly.
 
 ## New Features
-- **Trepenta Game Mode**: Adds Trepenta as a playable game with five rounds, rotating dealer display, per-round winner selection, and lowest-total scoring.
-- **Trepenta Setup Options**: Adds deck configuration (standard decks or Trepenta suit count) and optional selectable house rules when starting a Trepenta session.
-- **Trepenta Rules Content**: Adds in-app Trepenta rules in the shared Rules modal.
-- **Trepenta Pages and Navigation**: Adds Trepenta to the game registry, routing, and page rendering flow so sessions can be started and resumed.
+- **Trepenta Rule Deep Links**: Updates each Trepenta house rule with its own official section link on trepenta.ignyos.com.
+- **Game Card Continue Availability**: Enables Continue on Home cards only when that game has an active session.
 
 ## Improvements
-- **Session Details for Trepenta**: Shows Trepenta deck configuration and selected house rules in history/session cards.
-- **Start Game Modal Scrolling**: Limits start-game modal height and enables internal scrolling for long setup content.
-- **Home Card Actions Layout**: Uses full-width New/Continue buttons in a consistent grid layout on Home game cards.
-- **Trepenta End-Game Actions**: Uses the same left/center/right confirmation action layout as other game end dialogs, including a Home action.
-- **Score Sheet Header Alignment**: Centers row headers in Scrabble and Three Thirteen score sheets for consistent table presentation.
+- **Home Hero Message**: Updates the Home tagline to “Scorekeeping made easy for every round, every game.”
+- **About Modal Messaging**: Clarifies local-only data storage and adds explicit privacy wording.
+- **About Attribution Row**: Updates the about link row to read “Developed by ignyos.com”.
+- **Disabled Continue Styling**: Adds a visual disabled state for inactive Continue buttons on Home cards.
 
 ## Bug Fixes
-- **Trepenta Final Totals in Session Views**: Computes Trepenta standings from round scores so rankings display correctly in session summaries.
+- **Trepenta Rule Details Action**: Changes Trepenta house-rule Details actions to open the official rule page for the selected rule instead of the in-app modal.
+- **Disabled Continue Interaction**: Prevents disabled Continue buttons from navigating when clicked.
 
 ## Technical Changes
-- **New Trepenta Modules**: Adds `trepenta/TrepentaGame.js`, `trepenta/trepentaPage.js`, and `trepenta/index.html`.
-- **App Shell Integration**: Extends route/path helpers and game rendering to include Trepenta.
-- **Trepenta Styling**: Adds Trepenta-specific setup, rules, and scoreboard styles in `css/styles.css`.
+- **Home Session Check Logic**: Adds active-session lookup on Home render to control per-game Continue state.
+- **Trepenta Rule Metadata**: Extends selected Trepenta rule definitions to carry `officialUrl` values with fallbacks.
+- **External Rule Link Handler**: Adds click handling for Trepenta rule links that open official URLs in a new tab.
 
 ## Installation
 1. Clone this repository
