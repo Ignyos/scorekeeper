@@ -6,43 +6,43 @@
       key: "players-choice-peek",
       name: "Player's Choice (peek)",
       brief: "Look at both five-card piles before choosing hand vs field.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-players-choice-peek",
     },
     {
       key: "players-choice-sort",
       name: "Player's Choice (sort)",
       brief: "Sort cards before deciding which pile becomes your hand.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-players-choice-sort",
     },
     {
       key: "field-unlimited",
       name: "Field Unlimited",
       brief: "Allow unlimited field/hand exchanges during a turn.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-field-unlimited",
     },
     {
       key: "open-field",
       name: "Open Field",
       brief: "Allow exchanges using face-up cards in any player's field.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-open-field",
     },
     {
       key: "long-play",
       name: "Long Play",
       brief: "Do not end the round when the draw pile empties.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-long-play",
     },
     {
       key: "finish-line",
       name: "Finish Line",
       brief: "Grant a bonus when a player fully reveals their field.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-finish-line",
     },
     {
       key: "rival-sets",
       name: "Rival Sets",
       brief: "Allow end-of-round play onto other players' combinations.",
-      officialUrl: "https://trepenta.ignyos.com/",
+      officialUrl: "https://trepenta.ignyos.com/#rule-rival-sets",
     },
   ];
 
@@ -479,6 +479,7 @@
             key: String(rule.key || "").trim(),
             name: String(rule.name || "").trim(),
             summary: String(rule.summary || "").trim(),
+            officialUrl: String(rule.officialUrl || "").trim(),
           }))
           .filter((rule) => rule.key)
       : [];
@@ -489,6 +490,10 @@
 
     const selectedRuleDefinitions = selectedRules.length
       ? selectedRules
+          .map((rule) => ({
+            ...rule,
+            officialUrl: rule.officialUrl || houseRulesByKey[rule.key]?.officialUrl || "https://trepenta.ignyos.com/",
+          }))
       : selectedRuleKeys
           .map((ruleKey) => {
             const fallback = houseRulesByKey[ruleKey];
@@ -496,6 +501,7 @@
               key: ruleKey,
               name: fallback?.name || ruleKey,
               summary: fallback?.brief || "",
+              officialUrl: fallback?.officialUrl || "https://trepenta.ignyos.com/",
             };
           })
           .filter((rule) => rule.key);
@@ -524,11 +530,11 @@
               selectedRuleDefinitions.length
                 ? `<div class="trepenta-rules-badges">${selectedRuleDefinitions
                     .map((rule) => {
-                      const detailsButton = rulesTriggerHtml("trepenta", {
-                        context: "game",
-                        sessionId: session.id,
-                        label: "Details",
-                      });
+                      const detailsButton = `<button
+                        type="button"
+                        class="rules-trigger"
+                        data-trepenta-rule-link="${escapeHtml(rule.officialUrl || "https://trepenta.ignyos.com/")}" 
+                      >Details</button>`;
                       return `
                         <div class="trepenta-rule-pill">
                           <span class="trepenta-rule-name">${escapeHtml(rule.name || rule.key)}</span>
@@ -602,6 +608,16 @@
     const endResultsModal = document.getElementById("trepenta-end-results-modal");
     const endResultsList = document.getElementById("trepenta-end-results-list");
     const endResultsClose = document.getElementById("trepenta-end-results-close");
+
+    document.querySelectorAll("[data-trepenta-rule-link]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const url = button.getAttribute("data-trepenta-rule-link");
+        if (!url) {
+          return;
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
+      });
+    });
 
     function parseInputInteger(value) {
       if (!value || !String(value).trim()) {

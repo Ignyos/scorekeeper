@@ -403,6 +403,12 @@ td {
   padding: 0 8px;
 }
 
+.home-game-actions button:disabled {
+  opacity: 0.55;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
 .home-game-actions button:first-child {
   grid-column: 1;
 }

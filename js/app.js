@@ -396,11 +396,12 @@
       <div class="modal-backdrop" id="about-modal" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
           <h2 id="about-modal-title">About Scorekeeper</h2>
-          <p>Scorekeeper is a simple local app for tracking game night scores in your browser.</p>
-          <p class="muted">Game data is stored on this device.</p>
+          <p>Scorekeeper is a simple local app for tracking game scores in your browser.</p>
+          <p class="muted">Game data is stored on this device only. We do not collect or transmit any personal information.</p>
           <p class="about-link-row">
             <img class="about-logo" src="${aboutLogoPath()}" alt="Ignyos logo" />
-            <a class="about-link" href="https://ignyos.com" target="_blank" rel="noopener noreferrer">Visit ignyos.com</a>
+            <span> Developed by </span>
+            <a class="about-link" href="https://ignyos.com" target="_blank" rel="noopener noreferrer">ignyos.com</a>
           </p>
           <div class="row start-game-actions">
             <button type="button" id="close-about-modal">Close</button>
@@ -683,10 +684,19 @@
   }
 
   async function renderHome(db, state) {
+    const sessions = await listSessions(db);
+    const gamesWithActiveSessions = new Set(
+      sessions
+        .filter((session) => session?.status === "active")
+        .map((session) => String(session?.game || "").toLowerCase())
+        .filter(Boolean),
+    );
+
     const homeGameCards = Object.values(gameRegistry)
       .map((gameDef) => {
         const title = gameDef.title || gameDef.slug;
         const description = gameDef.description || "Start a new game";
+        const hasActiveSession = gamesWithActiveSessions.has(String(gameDef.slug || "").toLowerCase());
         return `
           <article class="home-game-card">
             ${rulesTriggerHtml(gameDef.slug, { context: "home", variant: "badge" })}
@@ -694,7 +704,7 @@
             <p class="muted">${escapeHtml(description)}</p>
             <div class="row home-game-actions">
               <button type="button" data-home-new="${escapeHtml(gameDef.slug)}">New</button>
-              <button type="button" data-home-continue="${escapeHtml(gameDef.slug)}">Continue</button>
+              <button type="button" data-home-continue="${escapeHtml(gameDef.slug)}" ${hasActiveSession ? "" : "disabled"}>Continue</button>
             </div>
           </article>
         `;
@@ -705,8 +715,7 @@
       "Scorekeeper",
       `
         <section class="home-hero">
-          <p class="home-mission">Simple score tracking for any of these game.</p>
-          <p class="muted">Your data stays in this browser.</p>
+          <p class="home-mission">Scorekeeping made easy for every round, every game.</p>
           <section class="home-game-grid">
             ${homeGameCards}
           </section>
@@ -726,6 +735,9 @@
 
     document.querySelectorAll("[data-home-continue]").forEach((button) => {
       button.addEventListener("click", () => {
+        if (button.hasAttribute("disabled")) {
+          return;
+        }
         const gameSlug = button.getAttribute("data-home-continue");
         if (!gameSlug) {
           return;
