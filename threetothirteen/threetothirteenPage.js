@@ -224,7 +224,7 @@
         }
 
         <section class="card">
-          <div class="yahtzee-sheet-wrap">
+          <div class="yahtzee-sheet-wrap ttt-sheet-wrap">
             <table class="ttt-sheet">
               <thead>
                 <tr>
