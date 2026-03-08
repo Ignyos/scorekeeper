@@ -223,7 +223,7 @@
             : ""
         }
 
-        <section class="card ttt-game-card">
+        <section class="card ttt-game-card" id="ttt-game-card">
           <div class="yahtzee-sheet-wrap ttt-sheet-wrap">
             <table class="ttt-sheet">
               <thead>
@@ -272,6 +272,7 @@
     );
 
     const scoreboardBody = document.getElementById("ttt-scoreboard-body");
+    const gameCard = document.getElementById("ttt-game-card");
     const scoreboardWrap = document.querySelector(".ttt-sheet-wrap");
     const endGameButton = document.getElementById("ttt-end-game");
 
@@ -285,10 +286,10 @@
     const endResultsList = document.getElementById("ttt-end-results-list");
     const endResultsClose = document.getElementById("ttt-end-results-close");
 
-    // Keep the score sheet as the primary scroll container on small screens
-    // so sticky player headers stay visible while reviewing rounds.
-    function syncScoreboardViewportHeight() {
-      if (!(scoreboardWrap instanceof HTMLElement)) {
+    // Size the game card to the visible viewport so the score sheet is
+    // the primary scroll area across mobile and desktop.
+    function syncGameCardViewportHeight() {
+      if (!(gameCard instanceof HTMLElement)) {
         return;
       }
 
@@ -296,11 +297,15 @@
         window.visualViewport && Number.isFinite(window.visualViewport.height)
           ? window.visualViewport.height
           : window.innerHeight;
-      const wrapRect = scoreboardWrap.getBoundingClientRect();
+      const cardRect = gameCard.getBoundingClientRect();
       const bottomGutter = 16;
-      const availableHeight = Math.floor(viewportHeight - wrapRect.top - bottomGutter);
-      const clampedHeight = Math.max(180, availableHeight);
-      scoreboardWrap.style.maxHeight = `${clampedHeight}px`;
+      const availableHeight = Math.floor(viewportHeight - cardRect.top - bottomGutter);
+      const clampedHeight = Math.max(260, availableHeight);
+      gameCard.style.height = `${clampedHeight}px`;
+
+      if (scoreboardWrap instanceof HTMLElement) {
+        scoreboardWrap.scrollTop = Math.max(0, scoreboardWrap.scrollTop);
+      }
     }
 
     const existingViewportController = window.ScorekeeperTTTViewportController;
@@ -311,16 +316,16 @@
     const viewportController = new AbortController();
     window.ScorekeeperTTTViewportController = viewportController;
 
-    window.addEventListener("resize", syncScoreboardViewportHeight, {
+    window.addEventListener("resize", syncGameCardViewportHeight, {
       signal: viewportController.signal,
       passive: true,
     });
-    window.addEventListener("orientationchange", syncScoreboardViewportHeight, {
+    window.addEventListener("orientationchange", syncGameCardViewportHeight, {
       signal: viewportController.signal,
       passive: true,
     });
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", syncScoreboardViewportHeight, {
+      window.visualViewport.addEventListener("resize", syncGameCardViewportHeight, {
         signal: viewportController.signal,
         passive: true,
       });
@@ -554,7 +559,7 @@
     }
 
     renderScoreboard();
-    syncScoreboardViewportHeight();
+    syncGameCardViewportHeight();
 
     endGameButton?.addEventListener("click", openEndConfirmModal);
     endConfirmCancel?.addEventListener("click", closeEndConfirmModal);

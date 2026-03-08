@@ -1062,11 +1062,17 @@ td {
 .ttt-game-card {
   display: flex;
   flex-direction: column;
+  min-height: 260px;
 }
 
 .ttt-sheet-wrap {
-  max-height: min(72vh, 560px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+}
+
+.ttt-game-card .game-actions-row {
+  flex: 0 0 auto;
 }
 
 .ttt-sheet thead th {
@@ -1142,4 +1148,51 @@ td {
   width: 16px;
   padding: 0;
   accent-color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .ttt-sheet {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .ttt-sheet th,
+  .ttt-sheet td {
+    padding: 4px;
+  }
+
+  .ttt-sheet thead th {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .ttt-sheet th[scope="row"] {
+    width: 40px;
+  }
+
+  .ttt-dealer-cell {
+    font-size: 12px;
+    width: 56px;
+  }
+
+  .ttt-player-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ttt-score-readonly,
+  .ttt-score-input {
+    min-width: 44px;
+    width: 44px;
+    font-size: 15px;
+  }
+
+  .ttt-winner-toggle {
+    font-size: 11px;
+    gap: 0;
+  }
+
+  .ttt-winner-toggle span {
+    display: none;
+  }
 }
