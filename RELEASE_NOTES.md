@@ -1,24 +1,19 @@
 ## Overview
-This release improves Home and About messaging, adds smarter Continue availability on game cards, and updates Trepenta house-rule details links to open the official rule sections directly.
+This release improves scoreboard readability in Three Thirteen and introduces a consistent, app-wide scrollbar style that matches the current visual theme.
 
 ## New Features
-- **Trepenta Rule Deep Links**: Updates each Trepenta house rule with its own official section link on trepenta.ignyos.com.
-- **Game Card Continue Availability**: Enables Continue on Home cards only when that game has an active session.
+- **Themed Scrollbars**: Adds a site-wide custom scrollbar style so scrolling areas look consistent with the rest of the application.
 
 ## Improvements
-- **Home Hero Message**: Updates the Home tagline to “Scorekeeping made easy for every round, every game.”
-- **About Modal Messaging**: Clarifies local-only data storage and adds explicit privacy wording.
-- **About Attribution Row**: Updates the about link row to read “Developed by ignyos.com”.
-- **Disabled Continue Styling**: Adds a visual disabled state for inactive Continue buttons on Home cards.
+- **Three Thirteen Scoreboard Header**: Keeps the player-name header row visible at the top while scrolling through rounds.
 
 ## Bug Fixes
-- **Trepenta Rule Details Action**: Changes Trepenta house-rule Details actions to open the official rule page for the selected rule instead of the in-app modal.
-- **Disabled Continue Interaction**: Prevents disabled Continue buttons from navigating when clicked.
+- **Three Thirteen Name Visibility**: Fixes the scoreboard so player names remain visible during vertical scrolling.
 
 ## Technical Changes
-- **Home Session Check Logic**: Adds active-session lookup on Home render to control per-game Continue state.
-- **Trepenta Rule Metadata**: Extends selected Trepenta rule definitions to carry `officialUrl` values with fallbacks.
-- **External Rule Link Handler**: Adds click handling for Trepenta rule links that open official URLs in a new tab.
+- **Scrollbar Theme Tokens**: Adds reusable scrollbar CSS variables for size, track, thumb, and hover states.
+- **Global Scrollbar Selectors**: Applies shared WebKit scrollbar styling across the app.
+- **Three Thirteen Table Wrapper**: Adds a dedicated wrapper class and sticky table-header styling for the Three Thirteen score sheet.
 
 ## Installation
 1. Clone this repository
