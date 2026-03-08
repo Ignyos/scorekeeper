@@ -1,20 +1,22 @@
 ## Overview
-This release improves the Three Thirteen score entry layout by better using available screen height and reducing horizontal scrolling on mobile.
+This release improves mobile score-entry usability across all games and adds versioned asset loading so updates appear more reliably, especially on phones.
 
 ## New Features
-- **Viewport-Fit Three Thirteen Layout**: Sizes the Three Thirteen game card to visible viewport space so the scoreboard area remains easier to use across devices.
+- **Build Version in About**: Shows the current release timestamp in the About dialog header so you can confirm which build is running.
+- **Versioned Asset URLs**: Loads CSS and JavaScript files with a release version query string to reduce stale-cache issues after deployment.
 
 ## Improvements
-- **Mobile Scoreboard Compaction**: Reduces Three Thirteen column and input widths on small screens to minimize left-right scrolling.
-- **Score Area Prioritization**: Keeps the score sheet as the primary scroll region within the Three Thirteen game card.
+- **All-Game Mobile Table Compaction**: Reduces score column widths, spacing, and input sizing on Yahtzee, Scrabble, Trepenta, and Three Thirteen for easier phone use.
+- **About Dialog Header Layout**: Aligns the build version to the right of the About title for quick visual verification.
 
 ## Bug Fixes
-- **Small-Screen Table Usability**: Fixes cramped Three Thirteen table behavior on phones by tightening spacing and control sizing.
+- **Mobile Update Visibility**: Fixes cases where mobile devices could continue loading stale CSS/JS after release.
+- **Release Script Asset Versioning**: Fixes release script handling so timestamped asset query updates run without parser errors.
 
 ## Technical Changes
-- **Three Thirteen Flex Card Structure**: Uses `ttt-game-card` and a flexible `ttt-sheet-wrap` so the score area can expand within available height.
-- **Viewport Height Sync**: Replaces sheet-only max-height logic with viewport-based card height recalculation on resize and orientation changes.
-- **Responsive Table Rules**: Adds a mobile media query that switches Three Thirteen to compact fixed-layout columns and narrower score controls.
+- **Global Mobile CSS Rules**: Adds shared small-screen scoreboard rules for Yahtzee, Scrabble, Trepenta, and Three Thirteen in `styles.css`.
+- **Automatic Asset Version Stamping**: Adds `Update-AssetVersionReferences` to `release.ps1` and runs it with each release timestamp.
+- **Version Detection Logic**: Adds asset query-string parsing in `app.js` and formats build output as `YYYY-MM-DD-HH-mm`.
 
 ## Installation
 1. Clone this repository
