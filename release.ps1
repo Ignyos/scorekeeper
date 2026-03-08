@@ -87,7 +87,7 @@ function Update-AssetVersionReferences {
         param($match)
         $attr = $match.Groups['attr'].Value
         $path = $match.Groups['path'].Value
-        return "$attr=\"$path?v=$Version\""
+        return ('{0}="{1}?v={2}"' -f $attr, $path, $Version)
       }
     )
 
