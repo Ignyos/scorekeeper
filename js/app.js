@@ -391,11 +391,50 @@
     return inSubFolder ? "../images/ignyos-logo.ico" : "./images/ignyos-logo.ico";
   }
 
+  function detectBuildVersion() {
+    const selectors = [
+      'script[src*="?v="]',
+      'link[href*="?v="]',
+    ];
+
+    for (const selector of selectors) {
+      const nodes = document.querySelectorAll(selector);
+      for (const node of nodes) {
+        const rawUrl = node.getAttribute("src") || node.getAttribute("href");
+        if (!rawUrl) {
+          continue;
+        }
+
+        try {
+          const parsed = new URL(rawUrl, window.location.href);
+          const version = parsed.searchParams.get("v");
+          if (version) {
+            return version;
+          }
+        } catch (_error) {
+          // Ignore malformed URLs and continue scanning other assets.
+        }
+      }
+    }
+
+    return "dev";
+  }
+
+  function formatBuildVersion(rawVersion) {
+    const match = String(rawVersion || "").match(/\d{4}-\d{2}-\d{2}-\d{2}-\d{2}/);
+    return match ? match[0] : "";
+  }
+
   function aboutModalHtml() {
+    const buildVersion = formatBuildVersion(detectBuildVersion());
+
     return `
       <div class="modal-backdrop" id="about-modal" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
-          <h2 id="about-modal-title">About Scorekeeper</h2>
+          <div class="about-title-row">
+            <h2 id="about-modal-title">About Scorekeeper</h2>
+            ${buildVersion ? `<span class="about-build-version">${escapeHtml(buildVersion)}</span>` : ""}
+          </div>
           <p>Scorekeeper is a simple local app for tracking game scores in your browser.</p>
           <p class="muted">Game data is stored on this device only. We do not collect or transmit any personal information.</p>
           <p class="about-link-row">

@@ -175,6 +175,19 @@ body {
   color: var(--accent);
 }
 
+.about-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.about-build-version {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 .about-link-row {
   display: inline-flex;
   align-items: center;
@@ -1151,6 +1164,112 @@ td {
 }
 
 @media (max-width: 760px) {
+  .yahtzee-sheet {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .yahtzee-sheet th,
+  .yahtzee-sheet td {
+    padding: 4px;
+  }
+
+  .yahtzee-sheet th[scope="row"] {
+    min-width: 0;
+    width: 104px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .yahtzee-score-input {
+    min-width: 44px;
+    width: 44px;
+    font-size: 15px;
+  }
+
+  .yahtzee-fixed-toggle {
+    width: 18px;
+    height: 18px;
+  }
+
+  .yahtzee-readonly-value {
+    min-height: 24px;
+    font-size: 14px;
+  }
+
+  .yahtzee-roll-trigger {
+    min-height: 30px;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .scrabble-sheet {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .scrabble-sheet th,
+  .scrabble-sheet td {
+    padding: 4px;
+  }
+
+  .scrabble-sheet thead th {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .scrabble-round-input,
+  .scrabble-completed-edit-input {
+    min-width: 44px;
+    width: 44px;
+    font-size: 15px;
+  }
+
+  .trepenta-sheet {
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .trepenta-sheet th,
+  .trepenta-sheet td {
+    padding: 4px;
+  }
+
+  .trepenta-sheet thead th {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .trepenta-sheet th[scope="row"] {
+    width: 40px;
+  }
+
+  .trepenta-dealer-cell {
+    font-size: 12px;
+    width: 56px;
+  }
+
+  .trepenta-player-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .trepenta-score-readonly,
+  .trepenta-score-input {
+    min-width: 44px;
+    width: 44px;
+    font-size: 15px;
+  }
+
+  .trepenta-winner-toggle {
+    font-size: 11px;
+    gap: 0;
+  }
+
+  .trepenta-winner-toggle span {
+    display: none;
+  }
+
   .ttt-sheet {
     min-width: 100%;
     table-layout: fixed;

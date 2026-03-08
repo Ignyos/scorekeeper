@@ -61,6 +61,60 @@ function Confirm-YesNo {
   return $value -match "^(y|yes)$"
 }
 
+function Update-AssetVersionReferences {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RootPath,
+    [Parameter(Mandatory = $true)]
+    [string]$Version,
+    [switch]$WhatIfMode
+  )
+
+  $indexFiles = Get-ChildItem -Path $RootPath -Recurse -File -Filter "index.html"
+  if (-not $indexFiles) {
+    return
+  }
+
+  $pattern = '(?<attr>\b(?:src|href))="(?<path>[^"]+\.(?:css|js))(?:\?v=[^"]*)?"'
+  $updatedFiles = @()
+
+  foreach ($file in $indexFiles) {
+    $originalContent = Get-Content -LiteralPath $file.FullName -Raw
+    $updatedContent = [regex]::Replace(
+      $originalContent,
+      $pattern,
+      {
+        param($match)
+        $attr = $match.Groups['attr'].Value
+        $path = $match.Groups['path'].Value
+        return "$attr=\"$path?v=$Version\""
+      }
+    )
+
+    if ($updatedContent -ne $originalContent) {
+      $updatedFiles += $file.FullName
+      if ($WhatIfMode) {
+        continue
+      }
+      Set-Content -LiteralPath $file.FullName -Value $updatedContent -Encoding utf8
+    }
+  }
+
+  if ($updatedFiles.Count -gt 0) {
+    if ($WhatIfMode) {
+      Write-Host "[WhatIf] Would update asset versions in:" -ForegroundColor Yellow
+    }
+    else {
+      Write-Host "Updated asset versions in:" -ForegroundColor Green
+    }
+
+    foreach ($path in $updatedFiles) {
+      $relativePath = [IO.Path]::GetRelativePath($RootPath, $path)
+      Write-Host "  - $relativePath"
+    }
+  }
+}
+
 $scriptDir = Split-Path -Parent $PSCommandPath
 Push-Location $scriptDir
 try {
@@ -102,6 +156,9 @@ try {
 
   $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm"
   $tagName = $timestamp
+
+  Update-AssetVersionReferences -RootPath $repoRoot -Version $timestamp -WhatIfMode:$WhatIfMode
+
   $releaseDir = Join-Path $repoRoot "release"
   if (-not (Test-Path -LiteralPath $releaseDir)) {
     New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
