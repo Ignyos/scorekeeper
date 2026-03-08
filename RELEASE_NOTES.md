@@ -1,19 +1,19 @@
 ## Overview
-This release improves scoreboard readability in Three Thirteen and introduces a consistent, app-wide scrollbar style that matches the current visual theme.
+This release improves Three Thirteen scoreboard behavior on mobile and desktop by making the score sheet adapt to available viewport space.
 
 ## New Features
-- **Themed Scrollbars**: Adds a site-wide custom scrollbar style so scrolling areas look consistent with the rest of the application.
+- **Adaptive Scoreboard Height**: Adds viewport-aware sizing for the Three Thirteen score sheet so the round table stays usable on small screens.
 
 ## Improvements
-- **Three Thirteen Scoreboard Header**: Keeps the player-name header row visible at the top while scrolling through rounds.
+- **Three Thirteen Scroll Experience**: Uses the score sheet as the main scroll area so player headers stay visible while reviewing rounds.
 
 ## Bug Fixes
-- **Three Thirteen Name Visibility**: Fixes the scoreboard so player names remain visible during vertical scrolling.
+- **Mobile Header Visibility**: Fixes cases where player names could scroll out of view when the page was taller than the viewport.
 
 ## Technical Changes
-- **Scrollbar Theme Tokens**: Adds reusable scrollbar CSS variables for size, track, thumb, and hover states.
-- **Global Scrollbar Selectors**: Applies shared WebKit scrollbar styling across the app.
-- **Three Thirteen Table Wrapper**: Adds a dedicated wrapper class and sticky table-header styling for the Three Thirteen score sheet.
+- **Three Thirteen Card Layout**: Adds a dedicated `ttt-game-card` container to support viewport-based score sheet sizing.
+- **Viewport Resize Handling**: Adds resize, orientation, and visual viewport listeners to recalculate score sheet max height.
+- **Sticky Header Layering**: Raises Three Thirteen header z-index for more reliable visibility above scrolling cells.
 
 ## Installation
 1. Clone this repository
