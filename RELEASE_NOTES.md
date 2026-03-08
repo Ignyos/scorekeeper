@@ -1,19 +1,20 @@
 ## Overview
-This release improves Three Thirteen scoreboard behavior on mobile and desktop by making the score sheet adapt to available viewport space.
+This release improves the Three Thirteen score entry layout by better using available screen height and reducing horizontal scrolling on mobile.
 
 ## New Features
-- **Adaptive Scoreboard Height**: Adds viewport-aware sizing for the Three Thirteen score sheet so the round table stays usable on small screens.
+- **Viewport-Fit Three Thirteen Layout**: Sizes the Three Thirteen game card to visible viewport space so the scoreboard area remains easier to use across devices.
 
 ## Improvements
-- **Three Thirteen Scroll Experience**: Uses the score sheet as the main scroll area so player headers stay visible while reviewing rounds.
+- **Mobile Scoreboard Compaction**: Reduces Three Thirteen column and input widths on small screens to minimize left-right scrolling.
+- **Score Area Prioritization**: Keeps the score sheet as the primary scroll region within the Three Thirteen game card.
 
 ## Bug Fixes
-- **Mobile Header Visibility**: Fixes cases where player names could scroll out of view when the page was taller than the viewport.
+- **Small-Screen Table Usability**: Fixes cramped Three Thirteen table behavior on phones by tightening spacing and control sizing.
 
 ## Technical Changes
-- **Three Thirteen Card Layout**: Adds a dedicated `ttt-game-card` container to support viewport-based score sheet sizing.
-- **Viewport Resize Handling**: Adds resize, orientation, and visual viewport listeners to recalculate score sheet max height.
-- **Sticky Header Layering**: Raises Three Thirteen header z-index for more reliable visibility above scrolling cells.
+- **Three Thirteen Flex Card Structure**: Uses `ttt-game-card` and a flexible `ttt-sheet-wrap` so the score area can expand within available height.
+- **Viewport Height Sync**: Replaces sheet-only max-height logic with viewport-based card height recalculation on resize and orientation changes.
+- **Responsive Table Rules**: Adds a mobile media query that switches Three Thirteen to compact fixed-layout columns and narrower score controls.
 
 ## Installation
 1. Clone this repository
