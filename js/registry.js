@@ -34,6 +34,13 @@ const gameRegistry = {
     className: "Dice10000Game",
     load: async () => window.ScorekeeperGames?.Dice10000Game || null,
   },
+  chesstimer: {
+    slug: "chesstimer",
+    title: "Chess Timer",
+    description: "Full-featured chess clock supporting all common timing controls.",
+    className: "ChessTimerGame",
+    load: async () => window.ScorekeeperGames?.ChessTimerGame || null,
+  },
 };
 
 async function loadGameClassBySlug(slug) {

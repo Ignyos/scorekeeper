@@ -15,7 +15,6 @@
     return min + Math.random() * (max - min);
   }
 
-
   function randFrom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }

@@ -34,6 +34,7 @@
       path.includes("/threetothirteen/") ||
       path.includes("/trepenta/") ||
       path.includes("/dice10000/") ||
+      path.includes("/chesstimer/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -45,6 +46,7 @@
       if (routeName === "threetothirteen") return "/threetothirteen";
       if (routeName === "trepenta") return "/trepenta";
       if (routeName === "dice10000") return "/dice10000";
+      if (routeName === "chesstimer") return "/chesstimer";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -73,6 +75,10 @@
     if (routeName === "dice10000") {
       if (path.includes("/dice10000/")) return "./index.html";
       return inSubFolder ? "../dice10000/index.html" : "./dice10000/index.html";
+    }
+    if (routeName === "chesstimer") {
+      if (path.includes("/chesstimer/")) return "./index.html";
+      return inSubFolder ? "../chesstimer/index.html" : "./chesstimer/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -378,6 +384,39 @@
         </ul>
       `,
     },
+    chesstimer: {
+      title: "Chess Timer",
+      html: `
+        <h3>Overview</h3>
+        <p>A full-featured chess clock supporting all common timing controls.</p>
+        <h3>Timing Modes</h3>
+        <ul>
+          <li><strong>No Timer</strong>: Casual play with move counting only.</li>
+          <li><strong>Sudden Death</strong>: Fixed time per player, no additions.</li>
+          <li><strong>Fischer Increment</strong>: Time added after each move (e.g., 5+3 means 5 minutes plus 3 seconds per move).</li>
+          <li><strong>Bronstein Delay</strong>: A delay window before main time ticks down. If you move within the delay, no main time is used.</li>
+          <li><strong>US Delay</strong>: Same as Bronstein — delay runs first, then main time.</li>
+          <li><strong>Hourglass</strong>: One player's elapsed time transfers to the opponent's clock.</li>
+          <li><strong>Per-Move Timer</strong>: Each move has a fixed time limit that resets on every move.</li>
+          <li><strong>Hybrid</strong>: Base time plus a per-move delay that must expire before base time starts counting.</li>
+          <li><strong>Stage-Based</strong>: Multiple time phases triggered by move count (e.g., 40 moves in 90 minutes, then +30 minutes).</li>
+        </ul>
+        <h3>Presets</h3>
+        <ul>
+          <li><strong>Bullet</strong>: 1+0, 1+1, 2+1</li>
+          <li><strong>Blitz</strong>: 3+0, 3+2, 5+0, 5+3</li>
+          <li><strong>Rapid</strong>: 10+0, 10+5, 15+10, 25+10</li>
+          <li><strong>Classical</strong>: 60+0, 90+30, 120+0</li>
+        </ul>
+        <h3>Controls</h3>
+        <ul>
+          <li>Tap your clock after making a move to pass the turn.</li>
+          <li>Press <strong>Space</strong> to switch clocks via keyboard.</li>
+          <li>Press <strong>P</strong> or <strong>Escape</strong> to pause and resume.</li>
+          <li>Black's clock is rotated 180° for across-the-table viewing.</li>
+        </ul>
+      `,
+    },
     dice10000: {
       title: "Dice 10,000 Rules",
       html: `
@@ -439,6 +478,7 @@
       path.includes("/threetothirteen/") ||
       path.includes("/trepenta/") ||
       path.includes("/dice10000/") ||
+      path.includes("/chesstimer/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -1361,6 +1401,17 @@
         .sort((left, right) => right.total - left.total);
     }
 
+    if (gameKey === "chesstimer") {
+      const winnerId = gameState.winnerId;
+      const winCondition = gameState.winCondition;
+      if (winCondition === "draw") {
+        return playerIds.map((playerId) => ({ playerId, total: 0 }));
+      }
+      return playerIds
+        .map((playerId) => ({ playerId, total: playerId === winnerId ? 1 : 0 }))
+        .sort((left, right) => right.total - left.total);
+    }
+
     const totalsByPlayer = gameState.totalsByPlayer || {};
     if (totalsByPlayer && typeof totalsByPlayer === "object") {
       const rows = Object.keys(totalsByPlayer)
@@ -1489,6 +1540,34 @@
     });
   }
 
+  async function renderChessTimer(db) {
+    const renderChessTimerPage = window.ScorekeeperGamesUI?.renderChessTimerPage;
+    if (typeof renderChessTimerPage !== "function") {
+      throw new Error("Chess Timer page renderer is unavailable");
+    }
+
+    await renderChessTimerPage(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+      rulesTriggerHtml,
+      showWinnerCelebration,
+    });
+  }
+
   async function renderDice10000(db) {
     const renderDice10000Page = window.ScorekeeperGamesUI?.renderDice10000Page;
     if (typeof renderDice10000Page !== "function") {
@@ -1579,6 +1658,10 @@
         }
         if (route.slug === "dice10000") {
           await renderDice10000(db);
+          return;
+        }
+        if (route.slug === "chesstimer") {
+          await renderChessTimer(db);
           return;
         }
       }

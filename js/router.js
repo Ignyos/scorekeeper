@@ -38,6 +38,10 @@ function getRouteFromPath(pathname) {
     return { key: "game", slug: "dice10000" };
   }
 
+  if (cleanPath.endsWith("/chesstimer") || cleanPath.endsWith("/chesstimer/index.html")) {
+    return { key: "game", slug: "chesstimer" };
+  }
+
   const fileModeGameMatch = cleanPath.match(/^\/(?!settings|players|history)([^/]+)\/index\.html$/);
   if (fileModeGameMatch) {
     return { key: "game", slug: fileModeGameMatch[1].toLowerCase() };
