@@ -1,24 +1,24 @@
 ## Overview
-This release adds full support for Dice 10,000, introduces winner celebration animations across games, and improves game browsing and rules clarity.
+This release adds Chess Timer as a fully-featured chess clock game, supporting all standard timing controls used in competitive and casual play.
 
 ## New Features
-- **Dice 10,000 Game**: Adds Dice 10,000 as a playable game with round-by-round score entry, running totals, end-game results, and history/continue support.
-- **Winner Celebration Modal**: Adds a full-screen winner celebration experience with animated effects and tie-aware winner display before final results.
-- **Developer Celebration Tester (File Mode)**: Adds a local debug modal to test celebration names and animation variants with `Ctrl+Shift+D` when running from `file://`.
+- **Chess Timer Game**: Adds Chess Timer as a playable game with a two-player live clock, full session persistence, and a completed-game results view.
+- **Nine Timing Modes**: Supports No Timer, Sudden Death, Fischer Increment, Bronstein Delay, US Delay, Hourglass, Per-Move, Hybrid (base + per-move), and Stage-Based time controls.
+- **Time Control Presets**: Includes 14 one-tap presets across Bullet (1+0, 1+1, 2+1), Blitz (3+0, 3+2, 5+0, 5+3), Rapid (10+0, 10+5, 15+10, 25+10), and Classical (60+0, 90+30, 120+0) categories.
+- **Custom Time Controls**: Allows fully custom configuration of base time, increment, delay, per-move limit, and multi-stage parameters.
+- **Stage-Based Time Control**: Supports multi-phase tournament formats (e.g., 40 moves in 90 minutes, then +30 minutes for the rest of the game).
+- **End Game Flow**: Adds an End Game button that pauses the clock and lets players declare a winner or agree to a draw without waiting for time to expire.
 
 ## Improvements
-- **Trepenta Rules Content**: Expands Trepenta rules with setup steps, field and die value explanation, and exchange examples.
-- **Alphabetical Game Ordering**: Sorts games alphabetically on the Home screen and in the History game filter.
-- **End-Game Flow Consistency**: Updates Yahtzee, Scrabble, Three Thirteen, Trepenta, and Dice 10,000 to show celebration before final score results.
-
-## Bug Fixes
-- **Celebration Rendering Availability**: Ensures celebration animations load consistently by including the celebration script on main and sub-pages.
-- **File-Mode Dice 10,000 Routing**: Fixes local file-mode navigation and route resolution for Dice 10,000 paths.
+- **Winner Celebration on Chess Timer**: Displays the winner celebration modal when a player wins on time or is declared the winner manually; skips celebration on draws.
+- **Black Clock Rotation**: Rotates Black's clock 180° so both players face their own display when the phone is placed between them.
+- **Auto-Pause on Tab Switch**: Automatically pauses the clock when the browser tab is hidden, preventing unintended time loss.
+- **Explicit Player Entry**: Requires both White and Black players to be explicitly selected or entered by name — no default player fallbacks.
 
 ## Technical Changes
-- **Canvas Celebration Engine**: Adds `js/celebration.js` with reusable canvas-based animation variants (`confetti`, `bursts`, `streamers`, `sparkles`).
-- **Dice 10,000 Modules**: Adds `dice10000/Dice10000Game.js` and `dice10000/dice10000Page.js` for game state and UI rendering.
-- **App Integration Updates**: Adds Dice 10,000 route/registry support, history outcome calculation, and shared celebration wiring across game renderers.
+- **Chess Timer Modules**: Adds `chesstimer/ChessTimerGame.js` for game state management and `chesstimer/chessTimerPage.js` for UI rendering and wiring.
+- **App Integration**: Adds Chess Timer route support, in-app rules content, history outcome calculation, and `renderChessTimer` wiring in `js/app.js`.
+- **Registry and Router Updates**: Registers the `chesstimer` slug in `js/registry.js` and adds route matching in `js/router.js`.
 
 ## Installation
 1. Clone this repository
