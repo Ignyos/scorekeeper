@@ -336,6 +336,22 @@
       html: `
         <h3>Objective</h3>
         <p>Finish five rounds with the lowest total points by making sets and runs in hand while managing your field.</p>
+        <h3>Setup</h3>
+        <ol>
+          <li>Select the correct number of decks based on player count.</li>
+          <li>Choose the first dealer. Dealer rotates left after each round.</li>
+          <li>Dealer shuffles and deals each player two separate piles of 5 cards.</li>
+          <li>Dealer places one card face-up to start the discard pile.</li>
+          <li>Each player places one pile face-down left-to-right as their field and keeps the other pile as their hand.</li>
+          <li>Each player rolls one die and places it to the left of their field cards.</li>
+        </ol>
+        <h3>Understanding the Field &amp; Die</h3>
+        <p>The five face-down field cards act as a reserve for exchanges and a trigger for end-of-round conditions.</p>
+        <h3>Field Card Values</h3>
+        <p>Your die roll sets field values from left to right in sequence. Example: roll 3 = positions 3, 4, 5, 6, 7.</p>
+        <h3>How to Exchange Field Cards</h3>
+        <p>On your turn, you may exchange one hand card with one face-down field card only when the card matches that position value.</p>
+        <p>Example: with field values 1-2-3-4-5, if you hold a 5 and position 5 is still face-down, you may place the 5 there face-up and take that face-down card into your hand.</p>
         <h3>Turn Sequence</h3>
         <ul>
           <li>Draw one card from the draw pile or discard pile.</li>
