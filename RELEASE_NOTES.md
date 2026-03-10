@@ -1,22 +1,24 @@
 ## Overview
-This release improves mobile score-entry usability across all games and adds versioned asset loading so updates appear more reliably, especially on phones.
+This release adds full support for Dice 10,000, introduces winner celebration animations across games, and improves game browsing and rules clarity.
 
 ## New Features
-- **Build Version in About**: Shows the current release timestamp in the About dialog header so you can confirm which build is running.
-- **Versioned Asset URLs**: Loads CSS and JavaScript files with a release version query string to reduce stale-cache issues after deployment.
+- **Dice 10,000 Game**: Adds Dice 10,000 as a playable game with round-by-round score entry, running totals, end-game results, and history/continue support.
+- **Winner Celebration Modal**: Adds a full-screen winner celebration experience with animated effects and tie-aware winner display before final results.
+- **Developer Celebration Tester (File Mode)**: Adds a local debug modal to test celebration names and animation variants with `Ctrl+Shift+D` when running from `file://`.
 
 ## Improvements
-- **All-Game Mobile Table Compaction**: Reduces score column widths, spacing, and input sizing on Yahtzee, Scrabble, Trepenta, and Three Thirteen for easier phone use.
-- **About Dialog Header Layout**: Aligns the build version to the right of the About title for quick visual verification.
+- **Trepenta Rules Content**: Expands Trepenta rules with setup steps, field and die value explanation, and exchange examples.
+- **Alphabetical Game Ordering**: Sorts games alphabetically on the Home screen and in the History game filter.
+- **End-Game Flow Consistency**: Updates Yahtzee, Scrabble, Three Thirteen, Trepenta, and Dice 10,000 to show celebration before final score results.
 
 ## Bug Fixes
-- **Mobile Update Visibility**: Fixes cases where mobile devices could continue loading stale CSS/JS after release.
-- **Release Script Asset Versioning**: Fixes release script handling so timestamped asset query updates run without parser errors.
+- **Celebration Rendering Availability**: Ensures celebration animations load consistently by including the celebration script on main and sub-pages.
+- **File-Mode Dice 10,000 Routing**: Fixes local file-mode navigation and route resolution for Dice 10,000 paths.
 
 ## Technical Changes
-- **Global Mobile CSS Rules**: Adds shared small-screen scoreboard rules for Yahtzee, Scrabble, Trepenta, and Three Thirteen in `styles.css`.
-- **Automatic Asset Version Stamping**: Adds `Update-AssetVersionReferences` to `release.ps1` and runs it with each release timestamp.
-- **Version Detection Logic**: Adds asset query-string parsing in `app.js` and formats build output as `YYYY-MM-DD-HH-mm`.
+- **Canvas Celebration Engine**: Adds `js/celebration.js` with reusable canvas-based animation variants (`confetti`, `bursts`, `streamers`, `sparkles`).
+- **Dice 10,000 Modules**: Adds `dice10000/Dice10000Game.js` and `dice10000/dice10000Page.js` for game state and UI rendering.
+- **App Integration Updates**: Adds Dice 10,000 route/registry support, history outcome calculation, and shared celebration wiring across game renderers.
 
 ## Installation
 1. Clone this repository
