@@ -33,6 +33,7 @@
       path.includes("/scrabble/") ||
       path.includes("/threetothirteen/") ||
       path.includes("/trepenta/") ||
+      path.includes("/dice10000/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -43,6 +44,7 @@
       if (routeName === "scrabble") return "/scrabble";
       if (routeName === "threetothirteen") return "/threetothirteen";
       if (routeName === "trepenta") return "/trepenta";
+      if (routeName === "dice10000") return "/dice10000";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -67,6 +69,10 @@
     if (routeName === "trepenta") {
       if (path.includes("/trepenta/")) return "./index.html";
       return inSubFolder ? "../trepenta/index.html" : "./trepenta/index.html";
+    }
+    if (routeName === "dice10000") {
+      if (path.includes("/dice10000/")) return "./index.html";
+      return inSubFolder ? "../dice10000/index.html" : "./dice10000/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -372,6 +378,42 @@
         </ul>
       `,
     },
+    dice10000: {
+      title: "Dice 10,000 Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Be the first player to reach at least 10,000 total points, then finish the final round with the highest score.</p>
+        <h3>Setup</h3>
+        <ul>
+          <li>Use six standard six-sided dice.</li>
+          <li>Choose a starting player and play continues clockwise.</li>
+          <li>Set a target score of 10,000 points.</li>
+        </ul>
+        <h3>Turn Flow</h3>
+        <ul>
+          <li>Roll all available dice and keep at least one scoring die or combination.</li>
+          <li>You may stop and bank your turn points, or continue rolling remaining dice to push for more.</li>
+          <li>If all six dice score in one turn (hot dice), roll all six again and keep building points.</li>
+          <li>If a roll has no scoring dice, you Farkle and lose unbanked points for that turn.</li>
+        </ul>
+        <h3>Common Scoring Values</h3>
+        <ul>
+          <li>Single 1 = 100 points, single 5 = 50 points.</li>
+          <li>Three of a kind: 1s = 1,000; other numbers = face value x 100.</li>
+          <li>Many groups also use bonus patterns (for example straights or three pairs); agree on house rules before starting.</li>
+        </ul>
+        <h3>Round End and Win</h3>
+        <ul>
+          <li>When a player reaches 10,000 or more, each other player gets one final turn.</li>
+          <li>Highest total score after final turns wins.</li>
+        </ul>
+        <h3>Using This Scorekeeper</h3>
+        <ul>
+          <li>Enter each player’s banked score per round.</li>
+          <li>Totals update automatically so you can track the race to 10,000.</li>
+        </ul>
+      `,
+    },
   };
 
   function menuHtml() {
@@ -396,6 +438,7 @@
       path.includes("/scrabble/") ||
       path.includes("/threetothirteen/") ||
       path.includes("/trepenta/") ||
+      path.includes("/dice10000/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -740,6 +783,11 @@
 
   async function renderHome(db, state) {
     const sessions = await listSessions(db);
+    const sortedGames = Object.values(gameRegistry).sort((left, right) => {
+      const leftTitle = String(left?.title || left?.slug || "");
+      const rightTitle = String(right?.title || right?.slug || "");
+      return leftTitle.localeCompare(rightTitle);
+    });
     const gamesWithActiveSessions = new Set(
       sessions
         .filter((session) => session?.status === "active")
@@ -747,7 +795,7 @@
         .filter(Boolean),
     );
 
-    const homeGameCards = Object.values(gameRegistry)
+    const homeGameCards = sortedGames
       .map((gameDef) => {
         const title = gameDef.title || gameDef.slug;
         const description = gameDef.description || "Start a new game";
@@ -920,13 +968,18 @@
   async function renderHistory(db) {
     const sessions = await listSessions(db);
     const players = await listPlayers(db, { includeDeleted: true });
+    const sortedGames = Object.values(gameRegistry).sort((left, right) => {
+      const leftTitle = String(left?.title || left?.slug || "");
+      const rightTitle = String(right?.title || right?.slug || "");
+      return leftTitle.localeCompare(rightTitle);
+    });
     const playerMap = buildPlayerMap(players);
     const gameFilter = parseGameFilter();
     const visibleSessions = gameFilter ? sessions.filter((session) => (session.game || "").toLowerCase() === gameFilter) : sessions;
     const filterTitle = gameFilter ? `Filtered by: ${escapeHtml(gameFilter)}` : "All games";
     const gameOptions = [
       `<option value="">All games</option>`,
-      ...Object.values(gameRegistry).map((gameDef) => {
+      ...sortedGames.map((gameDef) => {
         const slug = gameDef.slug;
         const label = gameDef.title || slug;
         return `<option value="${slug}" ${gameFilter === slug ? "selected" : ""}>${escapeHtml(label)}</option>`;
@@ -1186,6 +1239,39 @@
         .sort((left, right) => left.total - right.total);
     }
 
+    if (gameKey === "dice10000") {
+      const totalsByPlayer = {};
+      for (const playerId of playerIds) {
+        totalsByPlayer[playerId] = 0;
+      }
+
+      const rounds = Array.isArray(gameState.rounds) ? gameState.rounds : [];
+      rounds.forEach((round) => {
+        const scoresByPlayer = round?.scoresByPlayer || {};
+        playerIds.forEach((playerId) => {
+          const value = scoresByPlayer[playerId];
+          if (Number.isInteger(value)) {
+            totalsByPlayer[playerId] += value;
+          }
+        });
+      });
+
+      const activeRound = gameState.activeRoundScoresByPlayer || {};
+      playerIds.forEach((playerId) => {
+        const value = activeRound[playerId];
+        if (Number.isInteger(value)) {
+          totalsByPlayer[playerId] += value;
+        }
+      });
+
+      return playerIds
+        .map((playerId) => ({
+          playerId,
+          total: totalsByPlayer[playerId] || 0,
+        }))
+        .sort((left, right) => right.total - left.total);
+    }
+
     const totalsByPlayer = gameState.totalsByPlayer || {};
     if (totalsByPlayer && typeof totalsByPlayer === "object") {
       const rows = Object.keys(totalsByPlayer)
@@ -1310,6 +1396,33 @@
     });
   }
 
+  async function renderDice10000(db) {
+    const renderDice10000Page = window.ScorekeeperGamesUI?.renderDice10000Page;
+    if (typeof renderDice10000Page !== "function") {
+      throw new Error("Dice 10,000 page renderer is unavailable");
+    }
+
+    await renderDice10000Page(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      startGameModalHtml,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+      rulesTriggerHtml,
+    });
+  }
+
   function renderNotFound() {
     renderShell(
       "Not Found",
@@ -1368,6 +1481,10 @@
         }
         if (route.slug === "trepenta") {
           await renderTrepenta(db);
+          return;
+        }
+        if (route.slug === "dice10000") {
+          await renderDice10000(db);
           return;
         }
       }

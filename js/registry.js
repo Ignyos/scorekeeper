@@ -27,6 +27,13 @@ const gameRegistry = {
     className: "TrepentaGame",
     load: async () => window.ScorekeeperGames?.TrepentaGame || null,
   },
+  dice10000: {
+    slug: "dice10000",
+    title: "Dice 10,000",
+    description: "Track round points and race to 10,000 in this classic dice game.",
+    className: "Dice10000Game",
+    load: async () => window.ScorekeeperGames?.Dice10000Game || null,
+  },
 };
 
 async function loadGameClassBySlug(slug) {
