@@ -297,6 +297,54 @@ td {
   display: none;
 }
 
+.winner-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: radial-gradient(circle at 50% 25%, rgba(37, 99, 235, 0.25) 0%, rgba(8, 12, 20, 0.96) 65%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.winner-celebration--closing {
+  opacity: 0;
+}
+
+.winner-celebration-card {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100%);
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 94%, #000);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  padding: 22px;
+  text-align: center;
+}
+
+.winner-celebration-label {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.winner-celebration-name {
+  margin: 8px 0 16px 0;
+  font-size: clamp(30px, 6vw, 54px);
+  line-height: 1.06;
+}
+
+.winner-celebration-close {
+  min-width: 140px;
+}
+
 .modal {
   width: min(640px, 100%);
   background: var(--surface);

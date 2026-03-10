@@ -28,6 +28,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     } = deps;
 
     const sessionId = parseSessionId();
@@ -633,11 +634,18 @@
       }
     }
 
-    function showEndResults() {
+    async function showEndResults() {
       const finalTotals = game.getTotalsByPlayer(session.playerIds, { includeActiveRound: true });
       const sortedPlayerIds = [...session.playerIds].sort((leftPlayerId, rightPlayerId) => {
         return finalTotals[rightPlayerId] - finalTotals[leftPlayerId];
       });
+      const winningTotal = finalTotals[sortedPlayerIds[0]];
+      const winningPlayerNames = sortedPlayerIds
+        .filter((playerId) => finalTotals[playerId] === winningTotal)
+        .map((playerId) => playerMap[playerId]?.name || playerId);
+
+      await showWinnerCelebration(winningPlayerNames);
+
       endResultsList.innerHTML = sortedPlayerIds
         .map((playerId) => {
           const playerName = playerMap[playerId]?.name || playerId;
@@ -663,7 +671,7 @@
       try {
         await completeSession(db, session.id, game.getState());
         closeEndConfirmModal();
-        showEndResults();
+        await showEndResults();
       } catch (error) {
         alert(error.message);
       }

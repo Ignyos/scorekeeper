@@ -509,6 +509,46 @@
     `;
   }
 
+  function showWinnerCelebration(winnerNames, forcedVariant) {
+    if (window.ScorekeeperCelebration) {
+      return window.ScorekeeperCelebration.show(winnerNames, forcedVariant);
+    }
+    return Promise.resolve();
+  }
+
+  function debugModalHtml() {
+    const variants = window.ScorekeeperCelebration?.variants || ["confetti", "bursts", "streamers", "sparkles"];
+    const variantOptions = variants
+      .map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v.charAt(0).toUpperCase() + v.slice(1))}</option>`)
+      .join("");
+
+    return `
+      <div class="modal-backdrop" id="debug-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="debug-modal-title">
+          <h2 id="debug-modal-title">🎉 Test Winner Celebration</h2>
+          <p class="muted">Enter player names separated by commas to test the celebration modal.</p>
+
+          <div class="row start-game-section">
+            <input id="debug-player-names" placeholder="e.g., Alice, Bob, Charlie" value="Winner" />
+          </div>
+
+          <div class="row start-game-section">
+            <label for="debug-animation-variant">Animation</label>
+            <select id="debug-animation-variant">
+              <option value="random">Random</option>
+              ${variantOptions}
+            </select>
+          </div>
+
+          <div class="row start-game-actions">
+            <button type="button" id="debug-test-celebration">Test Celebration</button>
+            <button type="button" id="close-debug-modal">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function rulesTriggerHtml(gameSlug, options) {
     const requestedContext = String(options?.context || "home").toLowerCase();
     const context = requestedContext === "game" || requestedContext === "stay" ? requestedContext : "home";
@@ -639,6 +679,7 @@
       </div>
       ${aboutModalHtml()}
       ${rulesModalHtml()}
+      ${isFileMode() ? debugModalHtml() : ""}
     `;
 
     const menuRoot = document.getElementById("main-menu");
@@ -764,6 +805,54 @@
     const initialRules = parseRulesParams();
     if (initialRules && RULES_BY_GAME[initialRules.game]) {
       openRulesModal(initialRules.game, initialRules.context, initialRules.sessionId);
+    }
+
+    // Setup debug modal for file mode testing
+    if (isFileMode()) {
+      const debugModal = document.getElementById("debug-modal");
+      const closeDebugButton = document.getElementById("close-debug-modal");
+      const testButton = document.getElementById("debug-test-celebration");
+      const playerNamesInput = document.getElementById("debug-player-names");
+      const variantSelect = document.getElementById("debug-animation-variant");
+
+      function closeDebugModal() {
+        if (debugModal) {
+          debugModal.hidden = true;
+        }
+      }
+
+      closeDebugButton?.addEventListener("click", closeDebugModal);
+
+      debugModal?.addEventListener("click", (event) => {
+        if (event.target === debugModal) {
+          closeDebugModal();
+        }
+      });
+
+      testButton?.addEventListener("click", async () => {
+        const inputText = (playerNamesInput?.value || "").trim();
+        const playerNames = inputText
+          ? inputText
+              .split(",")
+              .map((name) => name.trim())
+              .filter(Boolean)
+          : ["Winner"];
+        const selectedVariant = variantSelect?.value || "random";
+        const forcedVariant = selectedVariant === "random" ? undefined : selectedVariant;
+        closeDebugModal();
+        await showWinnerCelebration(playerNames, forcedVariant);
+      });
+
+      // Keyboard shortcut: Ctrl+Shift+D to open debug modal
+      document.addEventListener("keydown", (event) => {
+        if (event.ctrlKey && event.shiftKey && event.key === "D") {
+          event.preventDefault();
+          if (debugModal) {
+            debugModal.hidden = false;
+            playerNamesInput?.focus();
+          }
+        }
+      });
     }
   }
 
@@ -1312,6 +1401,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     });
   }
 
@@ -1339,6 +1429,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     });
   }
 
@@ -1366,6 +1457,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     });
   }
 
@@ -1393,6 +1485,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     });
   }
 
@@ -1420,6 +1513,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     });
   }
 

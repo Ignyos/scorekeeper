@@ -68,6 +68,7 @@
       updateSessionGameState,
       completeSession,
       rulesTriggerHtml,
+      showWinnerCelebration,
     } = deps;
 
     const sessionId = parseSessionId();
@@ -792,12 +793,19 @@
         .sort((left, right) => right.total - left.total);
     }
 
-    function showEndGameResults() {
+    async function showEndGameResults() {
       if (!endGameModal || !endGameResults) {
         return;
       }
 
       const rows = finalScoresByPlayer();
+      const winningTotal = rows[0]?.total;
+      const winningPlayerNames = rows
+        .filter((row) => row.total === winningTotal)
+        .map((row) => row.playerName);
+
+      await showWinnerCelebration(winningPlayerNames);
+
       endGameResults.innerHTML = rows
         .map(
           (row) => `
@@ -856,7 +864,7 @@
       try {
         await completeSession(db, session.id, game.getState());
         closeEndGameConfirmModal();
-        showEndGameResults();
+        await showEndGameResults();
       } catch (error) {
         alert(error.message);
       }
