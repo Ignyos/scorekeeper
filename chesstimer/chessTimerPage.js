@@ -188,6 +188,22 @@
   // ---------------------------------------------------------------------------
   // Timer board HTML
   // ---------------------------------------------------------------------------
+  function ensureClockOrientationDefaults(state) {
+    if (!state || !Array.isArray(state.playerIds) || state.playerIds.length !== 2) return;
+
+    if (!state.clockRotatedByPlayer || typeof state.clockRotatedByPlayer !== "object") {
+      state.clockRotatedByPlayer = {};
+    }
+
+    const [whiteId, blackId] = state.playerIds;
+    if (!Object.prototype.hasOwnProperty.call(state.clockRotatedByPlayer, whiteId)) {
+      state.clockRotatedByPlayer[whiteId] = false;
+    }
+    if (!Object.prototype.hasOwnProperty.call(state.clockRotatedByPlayer, blackId)) {
+      state.clockRotatedByPlayer[blackId] = true;
+    }
+  }
+
   function clockHalfHtml(playerId, color, state, playerMap, esc) {
     const name = playerMap[playerId]?.name || (color === "white" ? "White" : "Black");
     const mode = state.timingMode;
@@ -200,6 +216,7 @@
 
     let classes = "chess-timer-half";
     if (color === "black") classes += " chess-timer-half--black";
+    if (state.clockRotatedByPlayer?.[playerId]) classes += " chess-timer-half--rotated";
     if (isActive) classes += " chess-timer-half--active";
     else if (isFlagged) classes += " chess-timer-half--flagged";
     else classes += " chess-timer-half--inactive";
@@ -235,6 +252,7 @@
       ` aria-label="${esc(name)} clock${isActive ? ", active" : ""}"` +
       ` data-chess-clock="${esc(playerId)}">` +
       `<div class="chess-timer-piece">${symbol}</div>` +
+      `<button type="button" class="chess-rotate-btn" aria-label="Rotate ${esc(name)} clock" data-chess-rotate="${esc(playerId)}">↻ Rotate</button>` +
       `<div class="${timeClass}" aria-live="off">${esc(displayTime)}</div>` +
       `<div class="chess-timer-player-name">${esc(name)}</div>` +
       `<div class="chess-timer-move-count">${esc(subInfo)}</div>` +
@@ -511,6 +529,8 @@
     const { updateSessionGameState, completeSession, routePath, escapeHtml, showWinnerCelebration } = deps;
     const sessionId = session.id;
 
+    ensureClockOrientationDefaults(game.state);
+
     let tickInterval = null;
     let lastTickAt = null;
     let saveTimeout = null;
@@ -571,10 +591,29 @@
       document.querySelectorAll("[data-chess-clock]").forEach((half) => {
         half.addEventListener("click", handleClockTap);
         half.addEventListener("keydown", (e) => {
+          if (e.target !== e.currentTarget) return;
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             handleClockTap.call(half);
           }
+        });
+      });
+
+      document.querySelectorAll("[data-chess-rotate]").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const playerId = btn.getAttribute("data-chess-rotate");
+          if (!playerId) return;
+
+          game.state.clockRotatedByPlayer[playerId] = !game.state.clockRotatedByPlayer[playerId];
+          const half = btn.closest("[data-chess-clock]");
+          if (half) {
+            half.classList.toggle("chess-timer-half--rotated", game.state.clockRotatedByPlayer[playerId]);
+          }
+
+          await updateSessionGameState(db, sessionId, game.getState()).catch(() => {});
         });
       });
     }

@@ -30,6 +30,7 @@ function chessTimerDefaultState() {
     loserPlayerId: null,
     winCondition: null,
     isFinal: false,
+    clockRotatedByPlayer: {},
     updatedAt: new Date().toISOString(),
   };
 }
@@ -50,6 +51,7 @@ class ChessTimerGame {
       timeRemainingMs: { ...(state.timeRemainingMs || {}) },
       delayRemainingMs: { ...(state.delayRemainingMs || {}) },
       perMoveRemainingMs: { ...(state.perMoveRemainingMs || {}) },
+      clockRotatedByPlayer: { ...(state.clockRotatedByPlayer || {}) },
     };
   }
 

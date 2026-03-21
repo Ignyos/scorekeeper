@@ -1567,10 +1567,12 @@ td {
   height: calc(100vh - 68px);
   height: calc(100dvh - 68px);
   overflow: hidden;
+  -webkit-user-select: none;
   user-select: none;
 }
 
 .chess-timer-half {
+  position: relative;
   flex: 1 1 0;
   min-height: 0;
   display: flex;
@@ -1590,7 +1592,7 @@ td {
   outline-offset: -2px;
 }
 
-.chess-timer-half--black {
+.chess-timer-half--rotated {
   transform: rotate(180deg);
 }
 
@@ -1610,6 +1612,25 @@ td {
 .chess-timer-piece {
   font-size: clamp(1.4rem, 4vw, 2rem);
   line-height: 1;
+}
+
+.chess-rotate-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+}
+
+.chess-rotate-btn:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  border-color: var(--accent);
 }
 
 .chess-timer-display {
