@@ -1,20 +1,22 @@
 ## Overview
-This release updates Chess Timer with player-controlled clock orientation. Each side now includes a rotate control while preserving the existing default board layout.
+This release improves score entry readability across games and updates Yahtzee roll handling with clearer actions for first-roll outcomes.
 
 ## New Features
-- **Clock Rotation Controls**: Adds a rotate button on both Chess Timer clocks so each player can choose their preferred orientation during play.
+- **Yahtzee Roll Actions**: Adds Clear and Forfeit actions in the Yahtzee roll modal to handle first-roll Yahtzee decisions directly.
 
 ## Improvements
-- **Default Orientation Preserved**: Keeps the current layout as the default, with White unrotated and Black rotated for across-the-board play.
-- **Per-Player Orientation Persistence**: Saves each player's rotate choice in the game session so orientation remains consistent after state updates.
+- **Score Input Styling**: Updates score input fields in Yahtzee, Trepenta, Scrabble, and Three to Thirteen with bordered, surfaced inputs for clearer entry.
+- **Three to Thirteen Winner Label**: Renames the winner toggle label from "Win" to "1st" for clearer placement meaning.
+- **Yahtzee Action Layout**: Improves roll modal button layout so actions stay aligned and evenly sized.
 
 ## Bug Fixes
-- **Clock Tap Safety**: Prevents rotate button interaction from triggering a clock tap or unintended turn switch.
+- **Yahtzee Cell Display**: Shows a dash for forfeited Yahtzee and keeps empty cells blank until a value is recorded.
+- **Yahtzee Action Guardrails**: Restricts Clear and Forfeit availability based on current score state to prevent invalid updates.
 
 ## Technical Changes
-- Adds persistent `clockRotatedByPlayer` state in Chess Timer game state initialization and hydration.
-- Adds orientation defaulting, rotate button rendering, and rotate event handling in the Chess Timer page.
-- Updates Chess Timer styles with class-based rotation and rotate button styling, including Safari `user-select` compatibility.
+- Adds Yahtzee modal action-state helpers to control Clear, Forfeit, and Apply visibility.
+- Adds Yahtzee state sync logic to recompute Yahtzee count, totals, leaderboard, and timestamps after clearing.
+- Updates Yahtzee modal rendering paths to support forfeited state handling and consistent preview visibility.
 
 ## Installation
 1. Clone this repository
