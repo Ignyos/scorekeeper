@@ -276,7 +276,7 @@
           const score = game.state.currentValuesByPlayer[playerId]?.[category];
 
           if (category === "yahtzee") {
-            const yahtzeeDisplay = String(game.getYahtzeeDisplayValue(playerId));
+            const yahtzeeDisplay = score === null ? "" : score === 0 ? "-" : String(game.getYahtzeeDisplayValue(playerId));
             return `
               <td>
                 <span class="yahtzee-readonly-value" data-yahtzee-display-player-id="${playerId}">${yahtzeeDisplay}</span>
@@ -439,7 +439,9 @@
               <select id="yahtzee-roll-target"></select>
             </div>
 
-            <div class="row start-game-actions">
+            <div class="row start-game-actions yahtzee-roll-actions">
+              <button type="button" id="yahtzee-roll-clear">Clear</button>
+              <button type="button" id="yahtzee-roll-forfeit" hidden>Forfeit</button>
               <button type="button" id="yahtzee-roll-submit">Apply</button>
               <button type="button" id="yahtzee-roll-cancel">Cancel</button>
             </div>
@@ -580,6 +582,8 @@
 
     const yahtzeeModal = document.getElementById("yahtzee-roll-modal");
     const yahtzeeRollCancel = document.getElementById("yahtzee-roll-cancel");
+    const yahtzeeRollClear = document.getElementById("yahtzee-roll-clear");
+    const yahtzeeRollForfeit = document.getElementById("yahtzee-roll-forfeit");
     const yahtzeeRollSubmit = document.getElementById("yahtzee-roll-submit");
     const yahtzeeRollPlayerName = document.getElementById("yahtzee-roll-player-name");
     const yahtzeeRollFaceRow = document.getElementById("yahtzee-roll-face-row");
@@ -598,6 +602,50 @@
 
     function selectedYahtzeeFaceValue() {
       return Number.parseInt(yahtzeeRollFace?.value || "1", 10);
+    }
+
+    function hasRecordedScores(playerId) {
+      const values = game.state.currentValuesByPlayer[playerId] || {};
+      return GameClass.categories().some((category) => Number.isInteger(values[category]));
+    }
+
+    function hasOtherPlayerRecordedScores(playerId) {
+      return session.playerIds
+        .filter((id) => id !== playerId)
+        .some((id) => hasRecordedScores(id));
+    }
+
+    function getYahtzeeModalActionState(playerId) {
+      const yahtzeeValue = game.state.currentValuesByPlayer[playerId]?.yahtzee;
+      const hasAwardedYahtzee = game.getYahtzeeCount(playerId) > 0;
+      const canClear = !hasOtherPlayerRecordedScores(playerId) && (yahtzeeValue === 0 || yahtzeeValue === 50);
+      return {
+        yahtzeeValue,
+        showForfeit: yahtzeeValue === null && !hasAwardedYahtzee,
+        showClear: canClear,
+        showApply: yahtzeeValue !== 0,
+      };
+    }
+
+    function syncYahtzeeCountFromState(playerId) {
+      const yahtzeeValue = game.state.currentValuesByPlayer[playerId]?.yahtzee;
+      const baseCount = yahtzeeValue === 50 ? 1 : 0;
+      const bonusCount = Math.floor((game.state.yahtzeeBonusByPlayer[playerId] || 0) / 100);
+      game.state.yahtzeeCountByPlayer[playerId] = baseCount + bonusCount;
+      game.state.totalsByPlayer[playerId] = game.calculateGrandTotal(playerId);
+      game.computeLeaderboard();
+      game.state.updatedAt = new Date().toISOString();
+    }
+
+    function applyYahtzeeModalActionVisibility(playerId) {
+      if (!yahtzeeRollClear || !yahtzeeRollForfeit || !yahtzeeRollSubmit) {
+        return;
+      }
+
+      const actionState = getYahtzeeModalActionState(playerId);
+      yahtzeeRollClear.hidden = !actionState.showClear;
+      yahtzeeRollForfeit.hidden = !actionState.showForfeit;
+      yahtzeeRollSubmit.hidden = !actionState.showApply;
     }
 
     function setFirstYahtzeeModalMode(isFirstYahtzee) {
@@ -620,6 +668,30 @@
         yahtzeeRollTargetRow.hidden = true;
       }
       if (yahtzeeRollTarget && isFirstYahtzee) {
+        yahtzeeRollTarget.innerHTML = "";
+      }
+    }
+
+    function setForfeitedYahtzeeModalMode(isForfeited) {
+      if (yahtzeeRollFaceRow) {
+        yahtzeeRollFaceRow.hidden = isForfeited;
+      }
+      if (yahtzeeRollRule) {
+        yahtzeeRollRule.hidden = isForfeited;
+        if (isForfeited) {
+          yahtzeeRollRule.textContent = "";
+        }
+      }
+      if (yahtzeeRollPreview) {
+        yahtzeeRollPreview.hidden = isForfeited;
+        if (isForfeited) {
+          yahtzeeRollPreview.textContent = "";
+        }
+      }
+      if (yahtzeeRollTargetRow) {
+        yahtzeeRollTargetRow.hidden = true;
+      }
+      if (yahtzeeRollTarget && isForfeited) {
         yahtzeeRollTarget.innerHTML = "";
       }
     }
@@ -657,11 +729,21 @@
       }
 
       const playerId = selectedYahtzeePlayerId();
+      const yahtzeeValue = game.state.currentValuesByPlayer[playerId]?.yahtzee;
+
+      if (yahtzeeValue === 0) {
+        setForfeitedYahtzeeModalMode(true);
+        applyYahtzeeModalActionVisibility(playerId);
+        return null;
+      }
+
+      setForfeitedYahtzeeModalMode(false);
       const faceValue = selectedYahtzeeFaceValue();
       const resolution = game.getYahtzeeRollResolution(playerId, faceValue);
 
       if (resolution.isFirstYahtzee) {
         setFirstYahtzeeModalMode(true);
+        applyYahtzeeModalActionVisibility(playerId);
         return resolution;
       }
 
@@ -689,6 +771,7 @@
       }
 
       renderYahtzeeRollPreview(resolution);
+      applyYahtzeeModalActionVisibility(playerId);
 
       return resolution;
     }
@@ -706,8 +789,7 @@
       if (yahtzeeRollFace && !yahtzeeRollFace.value) {
         yahtzeeRollFace.value = "1";
       }
-      const initialResolution = game.getYahtzeeRollResolution(playerId, 1);
-      setFirstYahtzeeModalMode(initialResolution.isFirstYahtzee);
+      applyYahtzeeModalActionVisibility(playerId);
       renderYahtzeeRollResolution();
     }
 
@@ -726,6 +808,61 @@
         }
         openYahtzeeRollModal(playerId);
       });
+    });
+
+    yahtzeeRollClear?.addEventListener("click", async () => {
+      try {
+        const playerId = selectedYahtzeePlayerId();
+        const actionState = getYahtzeeModalActionState(playerId);
+        if (!actionState.showClear) {
+          throw new Error("Clear is only available before other players record scores.");
+        }
+
+        const update = {
+          playerId,
+          category: "yahtzee",
+          value: null,
+        };
+
+        game.applyScoreUpdate(update);
+        syncYahtzeeCountFromState(playerId);
+        await updateSessionGameState(db, session.id, game.getState(), {
+          ...update,
+          updatedAt: new Date().toISOString(),
+        });
+
+        closeYahtzeeRollModal();
+        await renderYahtzeePage(db, deps);
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    yahtzeeRollForfeit?.addEventListener("click", async () => {
+      try {
+        const playerId = selectedYahtzeePlayerId();
+        const actionState = getYahtzeeModalActionState(playerId);
+        if (!actionState.showForfeit) {
+          throw new Error("Forfeit is not available for this Yahtzee box.");
+        }
+
+        const update = {
+          playerId,
+          category: "yahtzee",
+          value: 0,
+        };
+
+        game.applyScoreUpdate(update);
+        await updateSessionGameState(db, session.id, game.getState(), {
+          ...update,
+          updatedAt: new Date().toISOString(),
+        });
+
+        closeYahtzeeRollModal();
+        await renderYahtzeePage(db, deps);
+      } catch (error) {
+        alert(error.message);
+      }
     });
     yahtzeeRollCancel?.addEventListener("click", closeYahtzeeRollModal);
     yahtzeeRollFace?.addEventListener("change", () => {

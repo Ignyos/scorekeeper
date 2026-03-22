@@ -667,8 +667,9 @@ td {
 .yahtzee-score-input {
   width: 100%;
   min-width: 72px;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
   color: var(--text);
   text-align: center;
   font: inherit;
@@ -710,6 +711,17 @@ td {
   align-items: center;
   gap: 8px;
   margin-top: 6px;
+}
+
+.yahtzee-roll-actions {
+  width: 100%;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.yahtzee-roll-actions button {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .end-game-results {
@@ -1000,8 +1012,9 @@ td {
 .trepenta-score-input {
   width: 100%;
   min-width: 72px;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
   color: var(--text);
   text-align: center;
   font: inherit;
@@ -1072,8 +1085,9 @@ td {
 .scrabble-round-input {
   width: 100%;
   min-width: 72px;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
   color: var(--text);
   text-align: center;
   font: inherit;
@@ -1174,8 +1188,9 @@ td {
 .ttt-score-input {
   width: 100%;
   min-width: 72px;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
   color: var(--text);
   text-align: center;
   font: inherit;

@@ -391,7 +391,7 @@
                     <div class="ttt-player-cell">
                       <div class="ttt-score-readonly">${Number.isInteger(score) ? String(score) : ""}</div>
                       <label class="ttt-winner-toggle">
-                        <span>Win</span>
+                        <span>1st</span>
                         <input type="radio" disabled ${checked ? "checked" : ""} />
                       </label>
                     </div>
@@ -412,7 +412,7 @@
                       aria-label="Round ${round.cardValue} score for ${escapeHtml(playerName)}"
                     />
                     <label class="ttt-winner-toggle">
-                      <span>Win</span>
+                      <span>1st</span>
                       <input
                         class="ttt-winner-radio"
                         type="radio"
