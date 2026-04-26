@@ -620,6 +620,8 @@
       });
     });
 
+    let scoreInputFocusManager = null;
+
     function parseInputInteger(value) {
       if (!value || !String(value).trim()) {
         return null;
@@ -628,35 +630,61 @@
       return Number.isInteger(parsed) ? parsed : null;
     }
 
-    function roundScoreInputSelector(roundIndex, playerId) {
-      return `.trepenta-score-input[data-round-index="${roundIndex}"][data-player-id="${playerId}"]`;
+    async function commitScoreFromInput(input) {
+      const roundIndex = Number.parseInt(input.getAttribute("data-round-index"), 10);
+      const playerId = input.getAttribute("data-player-id");
+      if (!Number.isInteger(roundIndex) || !playerId) {
+        return;
+      }
+
+      const parsed = parseInputInteger(input.value);
+      try {
+        game.applyScoreUpdate({
+          roundIndex,
+          playerId,
+          value: parsed,
+        });
+        await updateSessionGameState(db, session.id, game.getState(), null);
+        renderScoreboard();
+      } catch (error) {
+        alert(error.message);
+      }
     }
 
-    function moveFocusToNextScoreInput(roundIndex, playerId) {
-      const currentPlayerIndex = session.playerIds.indexOf(playerId);
-      if (currentPlayerIndex < 0) {
+    function teardownScoreInputFocusManager() {
+      if (scoreInputFocusManager && typeof scoreInputFocusManager.dispose === "function") {
+        scoreInputFocusManager.dispose();
+      }
+      scoreInputFocusManager = null;
+
+      if (typeof window.commitScoreValue === "function" && window.commitScoreValue.__scorekeeperOwner === "trepenta") {
+        delete window.commitScoreValue;
+      }
+    }
+
+    function setupScoreInputFocusManager() {
+      const createFocusManager = window.ScorekeeperFocusManager?.createScoreInputFocusManager;
+      if (!(scoreboardBody instanceof HTMLElement) || typeof createFocusManager !== "function") {
         return;
       }
 
-      const nextPlayerIndex = currentPlayerIndex + 1;
-      if (nextPlayerIndex < session.playerIds.length) {
-        const nextPlayerId = session.playerIds[nextPlayerIndex];
-        const nextInput = scoreboardBody?.querySelector(roundScoreInputSelector(roundIndex, nextPlayerId));
-        if (nextInput instanceof HTMLInputElement) {
-          nextInput.focus({ preventScroll: true });
+      const commitScoreValue = async (input) => {
+        if (!(input instanceof HTMLInputElement)) {
+          return;
         }
+        await commitScoreFromInput(input);
+      };
+      commitScoreValue.__scorekeeperOwner = "trepenta";
+      window.commitScoreValue = commitScoreValue;
+
+      if (scoreInputFocusManager) {
         return;
       }
 
-      const nextRoundIndex = roundIndex + 1;
-      if (nextRoundIndex < GameClass.roundCount()) {
-        const nextInput = scoreboardBody?.querySelector(
-          roundScoreInputSelector(nextRoundIndex, session.playerIds[0]),
-        );
-        if (nextInput instanceof HTMLInputElement) {
-          nextInput.focus({ preventScroll: true });
-        }
-      }
+      scoreInputFocusManager = createFocusManager({
+        container: scoreboardBody,
+        inputSelector: ".trepenta-score-input",
+      });
     }
 
     function renderScoreboard() {
@@ -740,50 +768,11 @@
       scoreboardBody.innerHTML = `${rowsHtml}${totalRow}`;
 
       if (session.status !== "active") {
+        teardownScoreInputFocusManager();
         return;
       }
 
-      scoreboardBody.querySelectorAll(".trepenta-score-input").forEach((input) => {
-        const commitScore = async (moveFocusAfterCommit) => {
-          const roundIndex = Number.parseInt(input.getAttribute("data-round-index"), 10);
-          const playerId = input.getAttribute("data-player-id");
-          if (!Number.isInteger(roundIndex) || !playerId) {
-            return;
-          }
-
-          const parsed = parseInputInteger(input.value);
-          try {
-            game.applyScoreUpdate({
-              roundIndex,
-              playerId,
-              value: parsed,
-            });
-            await updateSessionGameState(db, session.id, game.getState(), null);
-            renderScoreboard();
-            if (moveFocusAfterCommit) {
-              moveFocusToNextScoreInput(roundIndex, playerId);
-            }
-          } catch (error) {
-            alert(error.message);
-          }
-        };
-
-        input.addEventListener("keydown", async (event) => {
-          if (event.key !== "Enter") {
-            return;
-          }
-          event.preventDefault();
-          await commitScore(true);
-        });
-
-        input.addEventListener("change", async () => {
-          await commitScore(false);
-        });
-
-        input.addEventListener("blur", async () => {
-          await commitScore(false);
-        });
-      });
+      setupScoreInputFocusManager();
 
       scoreboardBody.querySelectorAll(".trepenta-winner-radio").forEach((radio) => {
         radio.addEventListener("change", async () => {
@@ -821,6 +810,14 @@
         endConfirmModal.hidden = true;
       }
     }
+
+    window.addEventListener(
+      "pagehide",
+      () => {
+        teardownScoreInputFocusManager();
+      },
+      { once: true },
+    );
 
     async function showEndResults() {
       const totals = game.getTotalsByPlayer(session.playerIds);
