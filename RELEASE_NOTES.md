@@ -1,32 +1,28 @@
-## Overview
-This release improves score entry readability across games and updates Yahtzee roll handling with clearer actions for first-roll outcomes.
+# Release Notes
 
-## New Features
-- **Yahtzee Roll Actions**: Adds Clear and Forfeit actions in the Yahtzee roll modal to handle first-roll Yahtzee decisions directly.
+## Overview
+This release improves the user experience for score entry in round-based games by giving users full control over input focus and eliminating unexpected keyboard behavior.
 
 ## Improvements
-- **Score Input Styling**: Updates score input fields in Yahtzee, Trepenta, Scrabble, and Three to Thirteen with bordered, surfaced inputs for clearer entry.
-- **Three to Thirteen Winner Label**: Renames the winner toggle label from "Win" to "1st" for clearer placement meaning.
-- **Yahtzee Action Layout**: Improves roll modal button layout so actions stay aligned and evenly sized.
-
-## Bug Fixes
-- **Yahtzee Cell Display**: Shows a dash for forfeited Yahtzee and keeps empty cells blank until a value is recorded.
-- **Yahtzee Action Guardrails**: Restricts Clear and Forfeit availability based on current score state to prevent invalid updates.
+- **Score Input Focus Control**: Focus now only moves when users explicitly tap an input. The app no longer automatically advances focus to the next field, allowing players to enter scores in any order they choose.
+- **Keyboard Behavior**: The on-screen keyboard opens only when users tap an input and remains predictable—no unexpected auto-focus triggering unneeded keyboard popups.
+- **Input Switching**: When tapping a different score field, the previous field's value is committed before focus switches, ensuring reliable data entry without forcing a specific entry order.
 
 ## Technical Changes
-- Adds Yahtzee modal action-state helpers to control Clear, Forfeit, and Apply visibility.
-- Adds Yahtzee state sync logic to recompute Yahtzee count, totals, leaderboard, and timestamps after clearing.
-- Updates Yahtzee modal rendering paths to support forfeited state handling and consistent preview visibility.
+- Added shared focus management module (`focusManager.js`) that handles user-initiated focus control across all round-based games.
+- Refactored Three Thirteen and Trepenta score entry to use the new focus manager, eliminating per-input event listeners and auto-advance logic.
+- Score commit now uses `change` and `Enter` key events rather than blur events, providing more stable focus behavior.
+
+## Affected Games
+- **Three Thirteen**: Updated score entry UI with new focus control
+- **Trepenta**: Updated score entry UI with new focus control
 
 ## Installation
-1. Clone this repository
-2. Open `index.html` in a modern web browser (Chromium, Firefox, or Safari)
-3. Or visit the hosted version at https://scorekeeper.ignyos.com/
+Download and extract the latest release, or pull the latest changes from the repository.
 
 ## Requirements
-- Modern web browser with IndexedDB support (Chromium 25+, Firefox 16+, Safari 10+)
-- No backend server or additional dependencies required
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- JavaScript enabled
 
 ## Documentation
-- See [requirements.md](requirements.md) for feature specifications and acceptance criteria.
-- See [RELEASE_NOTES_STYLE.md](RELEASE_NOTES_STYLE.md) for release note formatting guidelines.
+For gameplay rules and game-specific help, visit the [Scorekeeper home page](https://ignyos.com/scorekeeper/).
