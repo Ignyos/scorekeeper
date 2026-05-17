@@ -1,28 +1,18 @@
 # Release Notes
 
 ## Overview
-This release improves the user experience for score entry in round-based games by giving users full control over input focus and eliminating unexpected keyboard behavior.
+This release adds Kan Jam as a fully playable game and improves the player selection experience across all games by preventing the same player from being selected in multiple slots.
+
+## New Features
+- **Kan Jam**: Added full support for the Kan Jam disc game. Two teams of two players race to exactly 21 points using throws and deflections. Supports all standard scoring types (Dinger, Deuce, Dunk, Done Deal, Interference, Miss), the bust rule, last-chance turns, overtime, and undo. Team names are auto-generated from player names.
 
 ## Improvements
-- **Score Input Focus Control**: Focus now only moves when users explicitly tap an input. The app no longer automatically advances focus to the next field, allowing players to enter scores in any order they choose.
-- **Keyboard Behavior**: The on-screen keyboard opens only when users tap an input and remains predictable—no unexpected auto-focus triggering unneeded keyboard popups.
-- **Input Switching**: When tapping a different score field, the previous field's value is committed before focus switches, ensuring reliable data entry without forcing a specific entry order.
+- **Player Selection**: Selecting a player in one slot now hides that player from all other player dropdowns in the same setup screen, preventing duplicate assignments. Applies to all games.
 
-## Technical Changes
-- Added shared focus management module (`focusManager.js`) that handles user-initiated focus control across all round-based games.
-- Refactored Three Thirteen and Trepenta score entry to use the new focus manager, eliminating per-input event listeners and auto-advance logic.
-- Score commit now uses `change` and `Enter` key events rather than blur events, providing more stable focus behavior.
+## Bug Fixes
+- **Kan Jam Navigation**: Fixed an issue where the Cancel button in the Kan Jam setup screen would reload the same page instead of returning to the home screen.
 
-## Affected Games
-- **Three Thirteen**: Updated score entry UI with new focus control
-- **Trepenta**: Updated score entry UI with new focus control
+---
 
-## Installation
-Download and extract the latest release, or pull the latest changes from the repository.
-
-## Requirements
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- JavaScript enabled
-
-## Documentation
-For gameplay rules and game-specific help, visit the [Scorekeeper home page](https://ignyos.com/scorekeeper/).
+## Overview
+This release improves the user experience for score entry...
