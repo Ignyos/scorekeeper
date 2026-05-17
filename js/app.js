@@ -35,6 +35,7 @@
       path.includes("/trepenta/") ||
       path.includes("/dice10000/") ||
       path.includes("/chesstimer/") ||
+      path.includes("/kanjam/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -47,6 +48,7 @@
       if (routeName === "trepenta") return "/trepenta";
       if (routeName === "dice10000") return "/dice10000";
       if (routeName === "chesstimer") return "/chesstimer";
+      if (routeName === "kanjam") return "/kanjam";
       if (routeName === "settings") return "/settings";
       if (routeName === "players") return "/players";
       if (routeName === "history") return "/history";
@@ -79,6 +81,10 @@
     if (routeName === "chesstimer") {
       if (path.includes("/chesstimer/")) return "./index.html";
       return inSubFolder ? "../chesstimer/index.html" : "./chesstimer/index.html";
+    }
+    if (routeName === "kanjam") {
+      if (path.includes("/kanjam/")) return "./index.html";
+      return inSubFolder ? "../kanjam/index.html" : "./kanjam/index.html";
     }
     if (routeName === "settings") {
       if (path.includes("/settings/")) return "./index.html";
@@ -453,6 +459,35 @@
         </ul>
       `,
     },
+    kanjam: {
+      title: "Kan Jam Rules",
+      html: `
+        <h3>Objective</h3>
+        <p>Be the first team to reach exactly 21 points, or throw an instant win (Done Deal).</p>
+        <h3>Teams</h3>
+        <ul>
+          <li>Two teams of two players each.</li>
+          <li>Teammates stand at opposite ends of the field, about 50 feet apart.</li>
+          <li>Partners alternate throwing and deflecting each turn.</li>
+        </ul>
+        <h3>Scoring</h3>
+        <ul>
+          <li><strong>Dinger (1 pt)</strong>: The deflector redirects the disc to hit any part of the outside of the kan.</li>
+          <li><strong>Deuce (2 pts)</strong>: The thrower hits the outside of the kan directly, without help from the deflector.</li>
+          <li><strong>Dunk (3 pts)</strong>: The deflector redirects the disc into the kan (through the top or slot).</li>
+          <li><strong>Done Deal (Instant Win)</strong>: The thrower puts the disc directly into the kan through the slot or top, unassisted. The opposing team does not get a final toss.</li>
+          <li><strong>Interference (3 pts or Win)</strong>: An opponent interferes with play to defend the goal. If the throwing team's score is 19 or 20, this is an automatic win.</li>
+        </ul>
+        <h3>Bust Rule</h3>
+        <p>If a score would push a team over 21, the points are <em>subtracted</em> instead of added. For example, a team at 20 that scores a Dunk (3 pts) drops to 17.</p>
+        <h3>Winning</h3>
+        <ul>
+          <li>First team to reach exactly 21 wins — but both teams must complete the same number of turns (use End Game to settle).</li>
+          <li>A Done Deal wins immediately with no last-toss option for the other team.</li>
+          <li>If both teams are tied at 21 at the end of a round, play overtime rounds until the tie is broken.</li>
+        </ul>
+      `,
+    },
   };
 
   function menuHtml() {
@@ -479,6 +514,7 @@
       path.includes("/trepenta/") ||
       path.includes("/dice10000/") ||
       path.includes("/chesstimer/") ||
+      path.includes("/kanjam/") ||
       path.includes("/settings/") ||
       path.includes("/players/") ||
       path.includes("/history/");
@@ -1412,6 +1448,24 @@
         .sort((left, right) => right.total - left.total);
     }
 
+    if (gameKey === "kanjam") {
+      const teams = Array.isArray(gameState.teams) ? gameState.teams : [];
+      const winnerTeamIndex = typeof gameState.winner === "number" ? gameState.winner : null;
+      const rows = [];
+      teams.forEach((team, teamIdx) => {
+        const isWinner = winnerTeamIndex === teamIdx;
+        const score = Number.isInteger(team.score) ? team.score : 0;
+        const teamPlayerIds = Array.isArray(team.playerIds) ? team.playerIds : [];
+        for (const playerId of teamPlayerIds) {
+          rows.push({ playerId, total: score, isWinner });
+        }
+      });
+      return rows.sort((left, right) => {
+        if (left.isWinner !== right.isWinner) return left.isWinner ? -1 : 1;
+        return right.total - left.total;
+      });
+    }
+
     const totalsByPlayer = gameState.totalsByPlayer || {};
     if (totalsByPlayer && typeof totalsByPlayer === "object") {
       const rows = Object.keys(totalsByPlayer)
@@ -1596,6 +1650,33 @@
     });
   }
 
+  async function renderKanJam(db) {
+    const renderKanJamPage = window.ScorekeeperGamesUI?.renderKanJamPage;
+    if (typeof renderKanJamPage !== "function") {
+      throw new Error("Kan Jam page renderer is unavailable");
+    }
+
+    await renderKanJamPage(db, {
+      parseSessionId,
+      listPlayers,
+      renderShell,
+      shouldAutoOpenNewGame,
+      clearNewGameQueryParam,
+      createPlayer,
+      loadGameClassBySlug,
+      createSession,
+      withSessionId,
+      routePath,
+      getSession,
+      formatCompletedGameWindow,
+      escapeHtml,
+      updateSessionGameState,
+      completeSession,
+      rulesTriggerHtml,
+      showWinnerCelebration,
+    });
+  }
+
   function renderNotFound() {
     renderShell(
       "Not Found",
@@ -1662,6 +1743,10 @@
         }
         if (route.slug === "chesstimer") {
           await renderChessTimer(db);
+          return;
+        }
+        if (route.slug === "kanjam") {
+          await renderKanJam(db);
           return;
         }
       }

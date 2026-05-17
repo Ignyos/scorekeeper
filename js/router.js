@@ -42,6 +42,10 @@ function getRouteFromPath(pathname) {
     return { key: "game", slug: "chesstimer" };
   }
 
+  if (cleanPath.endsWith("/kanjam") || cleanPath.endsWith("/kanjam/index.html")) {
+    return { key: "game", slug: "kanjam" };
+  }
+
   const fileModeGameMatch = cleanPath.match(/^\/(?!settings|players|history)([^/]+)\/index\.html$/);
   if (fileModeGameMatch) {
     return { key: "game", slug: fileModeGameMatch[1].toLowerCase() };

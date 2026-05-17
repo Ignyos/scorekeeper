@@ -118,6 +118,10 @@
             renderSelectedPlayers();
           });
         });
+
+        playerSelect?.querySelectorAll("option").forEach((opt) => {
+          opt.hidden = !!opt.value && selectedPlayerIds.includes(opt.value);
+        });
       }
 
       cancelButton?.addEventListener("click", handleCancel);

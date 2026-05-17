@@ -41,6 +41,13 @@ const gameRegistry = {
     className: "ChessTimerGame",
     load: async () => window.ScorekeeperGames?.ChessTimerGame || null,
   },
+  kanjam: {
+    slug: "kanjam",
+    title: "Kan Jam",
+    description: "Two teams of two race to exactly 21 points with disc throws and deflections.",
+    className: "KanJamGame",
+    load: async () => window.ScorekeeperGames?.KanJamGame || null,
+  },
 };
 
 async function loadGameClassBySlug(slug) {

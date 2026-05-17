@@ -431,6 +431,21 @@
       window.location.href = routePath("home");
     });
 
+    const whiteSelect = document.getElementById("chess-white-select");
+    const blackSelect = document.getElementById("chess-black-select");
+    function syncChessPlayerSelects() {
+      const whiteVal = whiteSelect?.value || "";
+      const blackVal = blackSelect?.value || "";
+      whiteSelect?.querySelectorAll("option").forEach((opt) => {
+        opt.hidden = !!opt.value && opt.value === blackVal;
+      });
+      blackSelect?.querySelectorAll("option").forEach((opt) => {
+        opt.hidden = !!opt.value && opt.value === whiteVal;
+      });
+    }
+    whiteSelect?.addEventListener("change", syncChessPlayerSelects);
+    blackSelect?.addEventListener("change", syncChessPlayerSelects);
+
     startBtn?.addEventListener("click", async () => {
       try {
         const mode = modeSelect?.value || "fischer";
