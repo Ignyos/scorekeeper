@@ -132,6 +132,15 @@
           </div>
         </div>
       </div>
+      <div class="modal-backdrop" id="kanjam-end-results-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="kanjam-end-results-title">
+          <h2 id="kanjam-end-results-title">Final Results</h2>
+          <ul id="kanjam-end-results-list" class="end-game-results"></ul>
+          <div class="row start-game-actions">
+            <button type="button" id="kanjam-end-results-close">Close</button>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -314,6 +323,32 @@
       if (bustModal) bustModal.hidden = true;
     });
 
+    const endResultsModal = document.getElementById("kanjam-end-results-modal");
+    const endResultsList = document.getElementById("kanjam-end-results-list");
+    const endResultsClose = document.getElementById("kanjam-end-results-close");
+
+    function showEndResults() {
+      const teams = game.getTeams();
+      const sortedTeams = [...teams]
+        .map((team, idx) => ({ team, idx }))
+        .sort((a, b) => b.team.score - a.team.score);
+
+      if (endResultsList) {
+        endResultsList.innerHTML = sortedTeams
+          .map(({ team }) => `
+            <li class="end-game-result-item">
+              <span class="end-game-result-score">${team.score}</span>
+              <span class="end-game-result-name">${esc(team.name)}</span>
+            </li>
+          `)
+          .join("");
+      }
+
+      if (endResultsModal) {
+        endResultsModal.hidden = false;
+      }
+    }
+
     function updateBoardState() {
       const teams = game.getTeams();
       const activeIdx = game.getCurrentTeamIndex();
@@ -391,6 +426,7 @@
         const winnerName = winnerTeam.playerIds.map((id) => playerMap[id]?.name || id).join(" & ");
         await showWinnerCelebration([winnerName]);
       }
+      showEndResults();
     }
 
     // Scoring buttons
@@ -445,10 +481,14 @@
           await showWinnerCelebration([winnerName]);
         }
 
-        window.location.reload();
+        showEndResults();
       } catch (err) {
         alert(err.message);
       }
+    });
+
+    endResultsClose?.addEventListener("click", () => {
+      window.location.href = routePath("home");
     });
   }
 
