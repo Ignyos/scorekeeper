@@ -197,22 +197,18 @@ try {
   }
 
   $aiPrompt = @"
-You are updating release notes for this repository.
+You are writing release notes for this repository.
 
-Use these files:
-- Diff input: $diffFileName
-- Release notes target: RELEASE_NOTES.md
-- Style guide: RELEASE_NOTES_STYLE.md
+Files for context:
+- Diff input: #file:release/$diffFileName
+- Style guide: #file:RELEASE_NOTES_STYLE.md
 
 Instructions:
-1) Read RELEASE_NOTES_STYLE.md and follow it exactly.
-2) Read $diffFileName completely.
-3) Update RELEASE_NOTES.md to reflect only the changes present in the diff.
+1) Read #file:RELEASE_NOTES_STYLE.md and follow it exactly, including all required sections.
+2) Read #file:release/$diffFileName completely.
+3) Replace the entire content of RELEASE_NOTES.md with clean, complete release notes for this release only.
 4) Keep language factual, concise, and user-facing.
 5) Do not invent features or fixes not present in the diff.
-6) Preserve existing formatting conventions in RELEASE_NOTES.md.
-
-Return only the updated RELEASE_NOTES.md content.
 "@
 
   if ($WhatIfMode) {
